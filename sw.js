@@ -1,5 +1,5 @@
-const CACHE = "komara-defense-v1";
-const ESSENTIELS = ["./", "index.html", "style.css", "defense.js", "manifest.json"];
+const CACHE = "komara-defense-v2";
+const ESSENTIELS = ["./", "index.html", "style.css", "defense.js", "manifest.json", "assets/carte-satellite.jpg"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ESSENTIELS)).then(() => self.skipWaiting()));

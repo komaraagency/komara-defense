@@ -176,6 +176,12 @@
   let CARTE = null;
   let CARTE_ECHELLE = 2;
 
+  // fond satellite photographique (repli : carte dessinee)
+  const IMG = new Image();
+  IMG.decoding = "async";
+  IMG.onload = function () { CARTE = genererCarte(); };
+  IMG.src = "assets/carte-satellite.jpg";
+
   function genererCarte() {
     const c = document.createElement("canvas");
     c.width = W * CARTE_ECHELLE;
@@ -336,6 +342,11 @@
       }
     }
 
+    /* --- fond satellite : il remplace tout le decor dessine --- */
+    if (IMG && IMG.complete && IMG.naturalWidth > 0) {
+      g.drawImage(IMG, 0, 0, W, H);
+    }
+
     /* --- routes --- */
     const traceRoute = (pts, largeur, couleur) => {
       g.lineCap = "round";
@@ -401,7 +412,8 @@
     g.arc(MAIRIE.x, MAIRIE.y, 9, 0, 6.283);
     g.fill();
 
-    /* --- véhicules garés --- */
+    /* --- véhicules garés (uniquement en carte dessinee) --- */
+    if (!(IMG && IMG.complete && IMG.naturalWidth > 0))
     for (let i = 0; i < 40; i++) {
       const x = 220 + r() * (W - 240), y = 30 + r() * (H - 60);
       if (distanceAuChemin({ x, y }) < 40) continue;
@@ -414,6 +426,7 @@
     }
 
     /* --- cimetière de containers / dépôt --- */
+    if (!(IMG && IMG.complete && IMG.naturalWidth > 0))
     for (let i = 0; i < 14; i++) {
       const x = 1100 + r() * 140, y = 500 + r() * 180;
       if (distanceAuChemin({ x, y }) < 42) continue;
