@@ -123,17 +123,17 @@
   const CHEMIN = [
     { x: 1300, y: 566 }, { x: 1052, y: 566 }, { x: 1052, y: 382 },
     { x: 782, y: 382 }, { x: 782, y: 602 }, { x: 482, y: 602 },
-    { x: 482, y: 404 }, { x: 214, y: 404 },
+    { x: 482, y: 404 }, { x: 372, y: 404 },
   ];
 
-  const MAIRIE = { x: 168, y: 404 };
+  const MAIRIE = { x: 328, y: 404 };
 
   const EMPLACEMENTS = [
     { x: 1160, y: 640 }, { x: 1150, y: 492 }, { x: 1150, y: 288 },
     { x: 952, y: 300 }, { x: 902, y: 452 }, { x: 700, y: 468 },
     { x: 690, y: 300 }, { x: 620, y: 668 }, { x: 884, y: 690 },
     { x: 552, y: 528 }, { x: 390, y: 668 }, { x: 366, y: 318 },
-    { x: 300, y: 512 }, { x: 604, y: 318 },
+    { x: 392, y: 522 }, { x: 604, y: 318 },
   ];
 
   // segments du chemin, pour mesurer la progression
@@ -372,11 +372,11 @@
     traceRoute([{ x: 1000, y: 720 }, { x: 1000, y: 120 }], 14, "#4a463c");
 
     // route principale d'invasion
-    traceRoute(CHEMIN, 34, "#3f3b33");
+    traceRoute(CHEMIN, 30, "rgba(52,48,41,0.9)");
 
     // marquage central
-    g.setLineDash([14, 16]);
-    g.strokeStyle = "rgba(226,214,170,0.5)";
+    g.setLineDash([10, 22]);
+    g.strokeStyle = "rgba(226,214,170,0.22)";
     g.lineWidth = 2;
     g.beginPath();
     g.moveTo(CHEMIN[0].x, CHEMIN[0].y);
