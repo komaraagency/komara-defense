@@ -175,6 +175,7 @@
   /* ---------------------------- carte satellite ---------------------------- */
   let CARTE = null;
   let CARTE_ECHELLE = 2;
+  let forcerPortrait = false;
 
   // fond satellite photographique (repli : carte dessinee)
   const IMG = new Image();
@@ -505,7 +506,8 @@
     canvas.height = Math.round(Hc * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    echelle = Math.max(L / W, Hc / H);
+    const portraitForce = forcerPortrait && Hc > L;
+    echelle = portraitForce ? Math.min(L / W, Hc / H) : Math.max(L / W, Hc / H);
     ox = (L - W * echelle) / 2;
     oy = (Hc - H * echelle) / 2;
 
@@ -1163,6 +1165,7 @@
     construireCartes();
     majCartes();
     afficher("jeu");
+    majRotation();
     redimensionner();
     majHud();
     bulle("Place tes défenses avant la première vague");
@@ -1235,7 +1238,7 @@
 
     // tourelle existante ?
     for (const t of etat.tourelles) {
-      if (dist(p, t) < 26) {
+      if (dist(p, t) * echelle < 34) {
         ouvrirPanneau(t);
         return;
       }
@@ -1244,7 +1247,7 @@
     // emplacement libre ?
     for (let i = 0; i < EMPLACEMENTS.length; i++) {
       const e = EMPLACEMENTS[i];
-      if (dist(p, e) < 30) {
+      if (dist(p, e) * echelle < 44) {
         if (emplacementLibre(i)) placerTourelle(i);
         else ouvrirPanneau(etat.tourelles.find((t) => t.slot === i));
         return;
@@ -1307,7 +1310,6 @@
     bulle("Progression effacée");
   });
 
-  let forcerPortrait = false;
   function majRotation() {
     const portrait = window.matchMedia("(orientation: portrait)").matches &&
       Math.min(window.innerWidth, window.innerHeight) < 900;
@@ -1321,6 +1323,7 @@
   $("#rot-continuer").addEventListener("click", () => {
     forcerPortrait = true;
     majRotation();
+    redimensionner();
     etat.enPause = false;
   });
 
