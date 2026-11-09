@@ -8,33 +8,34 @@
   /* ------------------------------- constantes ------------------------------ */
   const W = 2560;
   const H = 1440;
+  const K = 2.1; // facteur d'echelle carte (vitesses, portees, tailles)
   const CLE = "komara-defense-v1";
 
   const TOURELLES = {
     mitrailleuse: {
       nom: "Mitrailleuse", ico: "🔫", cout: 60,
-      degats: 5, cadence: 0.12, portee: 132, sol: true, air: true, couleur: "#c9d3c4",
+      degats: 5, cadence: 0.12, portee: 277, sol: true, air: true, couleur: "#c9d3c4",
     },
     canon: {
       nom: "Canon", ico: "💥", cout: 120,
-      degats: 42, cadence: 1.45, portee: 168, sol: true, air: false, couleur: "#b9a06a",
+      degats: 42, cadence: 1.45, portee: 353, sol: true, air: false, couleur: "#b9a06a",
     },
     missile: {
       nom: "Missile", ico: "🚀", cout: 150,
-      degats: 58, cadence: 1.9, portee: 215, sol: false, air: true, couleur: "#9fb8c9",
+      degats: 58, cadence: 1.9, portee: 452, sol: false, air: true, couleur: "#9fb8c9",
     },
     mortier: {
       nom: "Mortier", ico: "💣", cout: 140,
-      degats: 38, cadence: 2.2, portee: 235, sol: true, air: false, zone: 62, couleur: "#a8a08e",
+      degats: 38, cadence: 2.2, portee: 494, sol: true, air: false, zone: 130, couleur: "#a8a08e",
     },
   };
 
   const ENNEMIS = {
-    eclaireur: { nom: "Éclaireur", pv: 42, vit: 76, recompense: 8, taille: 9, degatsVille: 1, air: false, couleur: "#8a6b3f" },
-    soldat: { nom: "Soldat", pv: 76, vit: 50, recompense: 10, taille: 10, degatsVille: 2, air: false, couleur: "#6d5b45" },
-    blinde: { nom: "Blindé", pv: 240, vit: 34, recompense: 28, taille: 15, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55 },
-    helico: { nom: "Hélico", pv: 96, vit: 64, recompense: 24, taille: 12, degatsVille: 3, air: true, couleur: "#3e4a3a" },
-    boss: { nom: "Convoi lourd", pv: 1200, vit: 22, recompense: 220, taille: 22, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4 },
+    eclaireur: { nom: "Éclaireur", pv: 42, vit: 160, recompense: 8, taille: 19, degatsVille: 1, air: false, couleur: "#8a6b3f" },
+    soldat: { nom: "Soldat", pv: 76, vit: 105, recompense: 10, taille: 21, degatsVille: 2, air: false, couleur: "#6d5b45" },
+    blinde: { nom: "Blindé", pv: 240, vit: 71, recompense: 28, taille: 32, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55 },
+    helico: { nom: "Hélico", pv: 96, vit: 134, recompense: 24, taille: 25, degatsVille: 3, air: true, couleur: "#3e4a3a" },
+    boss: { nom: "Convoi lourd", pv: 1200, vit: 46, recompense: 220, taille: 46, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4 },
   };
 
   const VAGUES = [
@@ -471,7 +472,7 @@
 
   const etat = {
     ecran: "accueil",
-    credit: 220,
+    credit: 430,
     vague: 0,
     pvVille: 20,
     pvMax: 20,
@@ -560,10 +561,10 @@
 
   /* ------------------------------- placement ------------------------------- */
   function peutPlacer(p) {
-    if (dist(p, MAIRIE) < 80) return "Trop près de la mairie";
-    if (distanceAuChemin(p) < 62) return "Trop près de la route";
+    if (dist(p, MAIRIE) < 150) return "Trop près de la mairie";
+    if (distanceAuChemin(p) < 78) return "Trop près de la route";
     if (p.x < 40 || p.y < 40 || p.x > W - 40 || p.y > H - 190) return "Hors de la ville";
-    if (etat.tourelles.some((t) => dist(p, t) < 62)) return "Déjà une défense ici";
+    if (etat.tourelles.some((t) => dist(p, t) < 76)) return "Déjà une défense ici";
     return null;
   }
 
@@ -676,9 +677,9 @@
     const m = TOURELLES[t.cle];
     t.angle = Math.atan2(cible.y - t.y, cible.x - t.x);
     etat.tirs.push({
-      x: t.x + Math.cos(t.angle) * 16,
-      y: t.y + Math.sin(t.angle) * 16,
-      cible, vitesse: t.cle === "mortier" ? 210 : 620,
+      x: t.x + Math.cos(t.angle) * 34,
+      y: t.y + Math.sin(t.angle) * 34,
+      cible, vitesse: t.cle === "mortier" ? 440 : 1300,
       degats: degatsDe(t), zone: m.zone || 0, cle: t.cle,
       type: t.cle === "mortier" ? "obus" : t.cle === "missile" ? "missile" : "balle",
       angle: t.angle,
@@ -762,7 +763,7 @@
 
     const pas = dt * etat.vitesse;
     etat.temps += pas;
-    etat.credit = Math.min(9999, etat.credit + 9 * pas);
+    etat.credit = Math.min(9999, etat.credit + 15 * pas);
     etat.cadenceMsg = Math.max(0, etat.cadenceMsg - pas);
     if (AUTO) piloter(pas);
 
@@ -798,7 +799,7 @@
         e.angle = a;
         e.x += Math.cos(a) * m.vit * pas;
         e.y += Math.sin(a) * m.vit * pas;
-        if (dist(e, MAIRIE) < 30) arriver(e);
+        if (dist(e, MAIRIE) < 62) arriver(e);
       } else {
         e.d += m.vit * pas;
         const p = pointSurChemin(e.d, e.ci);
@@ -908,6 +909,7 @@
     const m = TOURELLES[t.cle];
     ctx.save();
     ctx.translate(t.x, t.y);
+    ctx.scale(K, K);
 
     // ombre
     ctx.fillStyle = "rgba(10,8,4,0.38)";
@@ -1161,7 +1163,7 @@
   }
 
   function demarrer() {
-    etat.credit = 220;
+    etat.credit = 430;
     etat.vague = 0;
     etat.pvVille = 20;
     etat.pvMax = 20;
