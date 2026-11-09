@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#0a0f0c">
+<title>Komara Défense — Sauve la ville</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+
+<div id="tricolore"></div>
+
+<!-- ============================= ACCUEIL ============================= -->
+<section id="accueil" class="ecran actif">
+  <div class="carte-accueil">
+    <img class="logo" src="assets/logo-256.png" alt="Komara Agency">
+    <p class="sur-titre">KOMARA AGENCY <span class="drap-gn" aria-label="Guinée"></span></p>
+    <h1>Komara<br>Défense</h1>
+    <p class="pitch">Vue satellite sur la ville. Les colonnes ennemies montent par les avenues : place tes défenses, tiens dix vagues, sauve la ville.</p>
+
+    <button id="btn-jouer" class="gros-bouton">Défendre la ville</button>
+
+    <div class="stats-accueil">
+      <div><b id="acc-vague">0</b><span>Meilleure vague</span></div>
+      <div><b id="acc-kills">0</b><span>Neutralisés</span></div>
+      <div><b id="acc-villes">0</b><span>Villes sauvées</span></div>
+    </div>
+
+    <p class="note">Touche une carte en bas, puis un emplacement autour de la route. Chaque tourelle se vise toute seule.</p>
+    <button id="btn-reset" class="lien-danger">Effacer la progression</button>
+  </div>
+</section>
+
+<!-- ============================== JEU ================================ -->
+<section id="jeu" class="ecran">
+  <canvas id="scene"></canvas>
+
+  <div id="hud">
+    <div class="hud-bloc">
+      <div class="hud-ligne">
+        <span>Ville</span>
+        <b id="hud-pv">20</b>
+      </div>
+      <div class="pv"><i id="bar-pv"></i></div>
+    </div>
+    <div class="hud-bloc centre">
+      <b id="hud-vague">VAGUE 1</b>
+      <span id="hud-vague-info">6 ennemis</span>
+    </div>
+    <div class="hud-bloc droite">
+      <div class="credits"><span class="eclair">⚡</span><b id="hud-credit">220</b></div>
+      <div class="boutons-haut">
+        <button id="btn-son" class="rond" aria-label="Son">🔊</button>
+        <button id="btn-vitesse" class="rond" aria-label="Vitesse">››</button>
+        <button id="btn-pause" class="rond" aria-label="Pause">⏸</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bulle" class="cache"></div>
+
+  <div id="dock">
+    <div class="cartes" id="cartes"></div>
+  </div>
+
+  <div id="panneau" class="cache">
+    <h3 id="p-titre">Tourelle</h3>
+    <p id="p-desc"></p>
+    <div class="p-actions">
+      <button id="p-ameliorer" class="p-btn">Améliorer <span id="p-cout"></span></button>
+      <button id="p-vendre" class="p-btn danger">Vendre +<span id="p-rendu"></span></button>
+      <button id="p-fermer" class="p-btn neutre">Fermer</button>
+    </div>
+  </div>
+
+  <div id="voile" class="cache">
+    <h2 id="v-titre">Victoire</h2>
+    <p id="v-texte"></p>
+    <div class="v-stats" id="v-stats"></div>
+    <div class="v-actions">
+      <button id="v-rejouer" class="gros-bouton">Rejouer</button>
+      <button id="v-menu" class="gros-bouton second">Menu</button>
+    </div>
+  </div>
+
+  <div id="rotation">
+    <div class="rot-ico">📱</div>
+    <p>Tourne ton téléphone</p>
+    <small>La ville se défend à l'horizontale.</small>
+    <button id="rot-continuer">Continuer quand même</button>
+  </div>
+</section>
+
+<script>
+/* veille : toute erreur s'affiche au lieu d'un écran figé */
+window.addEventListener("error", function (e) {
+  var d = document.getElementById("veille");
+  if (!d) {
+    d = document.createElement("div");
+    d.id = "veille";
+    d.style.cssText = "position:fixed;left:0;right:0;top:0;z-index:99999;background:#b00020;color:#fff;font:12px/1.45 monospace;padding:8px;white-space:pre-wrap";
+    document.body.appendChild(d);
+  }
+  d.textContent = "ERREUR: " + e.message + " | " + (e.filename || "").split("/").pop() + ":" + e.lineno;
+}, true);
+</script>
+<script src="defense.js?v=1"></script>
+</body>
+</html>
