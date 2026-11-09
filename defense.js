@@ -461,6 +461,11 @@
   }
 
   /* --------------------------------- état --------------------------------- */
+  const AUTO = (function () {
+    try { return new URLSearchParams(location.search).get("auto") === "1"; } catch (e) { return false; }
+  })();
+
+
   const etat = {
     ecran: "accueil",
     credit: 220,
@@ -673,6 +678,43 @@
   }
 
   /* --------------------------------- boucle -------------------------------- */
+  /* --------------------------- pilote de demo --------------------------- */
+  let autoTimer = 0;
+  function piloter(dt) {
+    autoTimer -= dt;
+    if (autoTimer > 0) return;
+    autoTimer = 1.2;
+
+    if (etat.tourelles.length >= 4 && Math.random() < 0.4) {
+      const t = etat.tourelles.filter((x) => x.niveau < 3).sort((a, b) => a.niveau - b.niveau)[0];
+      if (t) {
+        const cout = coutAmelioration(t);
+        if (etat.credit >= cout) {
+          etat.credit -= cout;
+          t.niveau += 1;
+          son(700, 0.1, "triangle", 0.06);
+          majHud();
+          return;
+        }
+      }
+    }
+
+    const ordre = ["mitrailleuse", "canon", "mitrailleuse", "mortier", "missile", "canon"];
+    const cle = ordre[etat.tourelles.length % ordre.length];
+    if (etat.credit < TOURELLES[cle].cout) return;
+
+    let meilleur = -1, meilleurD = 1e9;
+    for (let i = 0; i < EMPLACEMENTS.length; i++) {
+      if (!emplacementLibre(i)) continue;
+      const d = distanceAuChemin(EMPLACEMENTS[i]) + Math.random() * 30;
+      if (d < meilleurD) { meilleurD = d; meilleur = i; }
+    }
+    if (meilleur >= 0) {
+      etat.choix = cle;
+      placerTourelle(meilleur);
+    }
+  }
+
   function mettreAJour(dt) {
     if (etat.ecran !== "jeu" || etat.enPause || etat.fini) return;
 
@@ -680,6 +722,7 @@
     etat.temps += pas;
     etat.credit = Math.min(9999, etat.credit + 6 * pas);
     etat.cadenceMsg = Math.max(0, etat.cadenceMsg - pas);
+    if (AUTO) piloter(pas);
 
     // vagues
     if (etat.fileVague.length === 0 && etat.ennemis.length === 0) {
