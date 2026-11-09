@@ -6,36 +6,35 @@
   "use strict";
 
   /* ------------------------------- constantes ------------------------------ */
-  const W = 2560;
-  const H = 1440;
-  const K = 2.1; // facteur d'echelle carte (vitesses, portees, tailles)
+  const W = 1280;
+  const H = 720;
   const CLE = "komara-defense-v1";
 
   const TOURELLES = {
     mitrailleuse: {
       nom: "Mitrailleuse", ico: "🔫", cout: 60,
-      degats: 5, cadence: 0.12, portee: 277, sol: true, air: true, couleur: "#c9d3c4",
+      degats: 5, cadence: 0.12, portee: 132, sol: true, air: true, couleur: "#c9d3c4",
     },
     canon: {
       nom: "Canon", ico: "💥", cout: 120,
-      degats: 42, cadence: 1.45, portee: 353, sol: true, air: false, couleur: "#b9a06a",
+      degats: 42, cadence: 1.45, portee: 168, sol: true, air: false, couleur: "#b9a06a",
     },
     missile: {
       nom: "Missile", ico: "🚀", cout: 150,
-      degats: 58, cadence: 1.9, portee: 452, sol: false, air: true, couleur: "#9fb8c9",
+      degats: 58, cadence: 1.9, portee: 215, sol: false, air: true, couleur: "#9fb8c9",
     },
     mortier: {
       nom: "Mortier", ico: "💣", cout: 140,
-      degats: 38, cadence: 2.2, portee: 494, sol: true, air: false, zone: 130, couleur: "#a8a08e",
+      degats: 38, cadence: 2.2, portee: 235, sol: true, air: false, zone: 62, couleur: "#a8a08e",
     },
   };
 
   const ENNEMIS = {
-    eclaireur: { nom: "Éclaireur", pv: 42, vit: 160, recompense: 8, taille: 19, degatsVille: 1, air: false, couleur: "#8a6b3f" },
-    soldat: { nom: "Soldat", pv: 76, vit: 105, recompense: 10, taille: 21, degatsVille: 2, air: false, couleur: "#6d5b45" },
-    blinde: { nom: "Blindé", pv: 240, vit: 71, recompense: 28, taille: 32, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55 },
-    helico: { nom: "Hélico", pv: 96, vit: 134, recompense: 24, taille: 25, degatsVille: 3, air: true, couleur: "#3e4a3a" },
-    boss: { nom: "Convoi lourd", pv: 1200, vit: 46, recompense: 220, taille: 46, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4 },
+    eclaireur: { nom: "Éclaireur", pv: 42, vit: 76, recompense: 8, taille: 9, degatsVille: 1, air: false, couleur: "#8a6b3f" },
+    soldat: { nom: "Soldat", pv: 76, vit: 50, recompense: 10, taille: 10, degatsVille: 2, air: false, couleur: "#6d5b45" },
+    blinde: { nom: "Blindé", pv: 240, vit: 34, recompense: 28, taille: 15, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55 },
+    helico: { nom: "Hélico", pv: 96, vit: 64, recompense: 24, taille: 12, degatsVille: 3, air: true, couleur: "#3e4a3a" },
+    boss: { nom: "Convoi lourd", pv: 1200, vit: 22, recompense: 220, taille: 22, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4 },
   };
 
   const VAGUES = [
@@ -120,75 +119,55 @@
   }
 
   /* ------------------------------ géographie ------------------------------ */
-  // Deux axes d'invasion convergents vers la mairie.
-  // Rues reelles de Kaloum (Conakry), issues d'OpenStreetMap.
-  const CHEMINS = [
-    [
-      { x: 2064.7, y: -50.0 },
-      { x: 1935.2, y: 100.7 },
-      { x: 1929.7, y: 107.1 },
-      { x: 1883.5, y: 25.0 },
-      { x: 1568.7, y: 219.5 },
-      { x: 1483.5, y: 267.5 },
-      { x: 1426.3, y: 548.7 },
-      { x: 1353.5, y: 597.0 },
-      { x: 1349.2, y: 605.7 },
-      { x: 1343.1, y: 640.1 },
-      { x: 1262.8, y: 624.4 },
-      { x: 1267.7, y: 632.8 },
-      { x: 1250.3, y: 705.2 },
-    ],
-    [
-      { x: 186.7, y: -50.0 },
-      { x: 655.6, y: 44.9 },
-      { x: 807.3, y: 75.6 },
-      { x: 785.9, y: 193.2 },
-      { x: 1186.0, y: 273.3 },
-      { x: 1145.7, y: 478.4 },
-      { x: 1165.1, y: 466.6 },
-      { x: 1267.7, y: 632.8 },
-      { x: 1250.3, y: 705.2 },
-    ],
+  // Axe d'invasion : la route vient de l'est et serpente jusqu'à la mairie.
+  const CHEMIN = [
+    { x: 1300, y: 566 }, { x: 1052, y: 566 }, { x: 1052, y: 382 },
+    { x: 782, y: 382 }, { x: 782, y: 602 }, { x: 482, y: 602 },
+    { x: 482, y: 404 }, { x: 372, y: 404 },
   ];
 
-  const MAIRIE = { x: 1250, y: 705 };
+  const MAIRIE = { x: 328, y: 404 };
 
-  // segments par chemin, pour mesurer la progression
-  const SEGS = CHEMINS.map((pts) => {
-    const liste = [];
+  const EMPLACEMENTS = [
+    { x: 1160, y: 640 }, { x: 1150, y: 492 }, { x: 1150, y: 288 },
+    { x: 952, y: 300 }, { x: 902, y: 452 }, { x: 700, y: 468 },
+    { x: 690, y: 300 }, { x: 620, y: 668 }, { x: 884, y: 690 },
+    { x: 552, y: 528 }, { x: 390, y: 668 }, { x: 366, y: 318 },
+    { x: 392, y: 522 }, { x: 604, y: 318 },
+  ];
+
+  // segments du chemin, pour mesurer la progression
+  const SEGMENTS = [];
+  (function () {
     let total = 0;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const a = pts[i], b = pts[i + 1];
+    for (let i = 0; i < CHEMIN.length - 1; i++) {
+      const a = CHEMIN[i], b = CHEMIN[i + 1];
       const l = dist(a, b);
-      liste.push({ a, b, l, debut: total });
+      SEGMENTS.push({ a, b, l, debut: total });
       total += l;
     }
-    liste.total = total;
-    return liste;
-  });
+    SEGMENTS.total = total;
+  })();
 
-  function pointSurChemin(d, ci) {
-    const segs = SEGS[ci || 0];
-    d = clamp(d, 0, segs.total);
-    for (const s2 of segs) {
-      if (d <= s2.debut + s2.l) {
-        const t = (d - s2.debut) / s2.l;
-        return { x: s2.a.x + (s2.b.x - s2.a.x) * t, y: s2.a.y + (s2.b.y - s2.a.y) * t };
+  function pointSurChemin(d) {
+    d = clamp(d, 0, SEGMENTS.total);
+    for (const s of SEGMENTS) {
+      if (d <= s.debut + s.l) {
+        const t = (d - s.debut) / s.l;
+        return { x: s.a.x + (s.b.x - s.a.x) * t, y: s.a.y + (s.b.y - s.a.y) * t };
       }
     }
-    const fin = CHEMINS[ci || 0][CHEMINS[ci || 0].length - 1];
+    const fin = CHEMIN[CHEMIN.length - 1];
     return { x: fin.x, y: fin.y };
   }
 
   function distanceAuChemin(p) {
     let mini = 1e9;
-    for (const segs of SEGS) {
-      for (const s2 of segs) {
-        const dx = s2.b.x - s2.a.x, dy = s2.b.y - s2.a.y;
-        const t = clamp(((p.x - s2.a.x) * dx + (p.y - s2.a.y) * dy) / (s2.l * s2.l), 0, 1);
-        const px = s2.a.x + dx * t, py = s2.a.y + dy * t;
-        mini = Math.min(mini, Math.hypot(p.x - px, p.y - py));
-      }
+    for (const s of SEGMENTS) {
+      const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y;
+      const t = clamp(((p.x - s.a.x) * dx + (p.y - s.a.y) * dy) / (s.l * s.l), 0, 1);
+      const px = s.a.x + dx * t, py = s.a.y + dy * t;
+      mini = Math.min(mini, Math.hypot(p.x - px, p.y - py));
     }
     return mini;
   }
@@ -388,32 +367,28 @@
       g.stroke();
     };
 
-    // axes d'invasion : simple reperage au sol, les ennemis suivent les vraies rues
-    for (const pts of CHEMINS) {
-      g.lineCap = "round";
-      g.lineJoin = "round";
-      g.strokeStyle = "rgba(18,16,12,0.20)";
-      g.lineWidth = 13;
-      g.beginPath();
-      g.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
-      g.stroke();
+    // routes secondaires
+    traceRoute([{ x: 340, y: 0 }, { x: 340, y: 560 }, { x: 900, y: 560 }], 16, "#4a463c");
+    traceRoute([{ x: 560, y: 720 }, { x: 560, y: 250 }, { x: 1180, y: 250 }], 15, "#4a463c");
+    traceRoute([{ x: 1000, y: 720 }, { x: 1000, y: 120 }], 14, "#4a463c");
 
-      g.setLineDash([7, 30]);
-      g.strokeStyle = "rgba(245,207,27,0.50)";
-      g.lineWidth = 3.5;
-      g.beginPath();
-      g.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
-      g.stroke();
-      g.setLineDash([]);
-    }
+    // route principale d'invasion
+    traceRoute(CHEMIN, 30, "rgba(52,48,41,0.9)");
+
+    // marquage central
+    g.setLineDash([10, 22]);
+    g.strokeStyle = "rgba(226,214,170,0.22)";
+    g.lineWidth = 2;
+    g.beginPath();
+    g.moveTo(CHEMIN[0].x, CHEMIN[0].y);
+    for (let i = 1; i < CHEMIN.length; i++) g.lineTo(CHEMIN[i].x, CHEMIN[i].y);
+    g.stroke();
+    g.setLineDash([]);
 
     // poussière et traces sur la route
     for (let i = 0; i < 220; i++) {
-      const ci = Math.floor(r() * CHEMINS.length);
-      const d = r() * SEGS[ci].total;
-      const p = pointSurChemin(d, ci);
+      const d = r() * SEGMENTS.total;
+      const p = pointSurChemin(d);
       g.fillStyle = "rgba(180,165,130," + (0.03 + r() * 0.07).toFixed(3) + ")";
       g.beginPath();
       g.arc(p.x + (r() - 0.5) * 30, p.y + (r() - 0.5) * 30, 2 + r() * 7, 0, 6.283);
@@ -494,7 +469,7 @@
 
   const etat = {
     ecran: "accueil",
-    credit: 430,
+    credit: 220,
     vague: 0,
     pvVille: 20,
     pvMax: 20,
@@ -515,7 +490,6 @@
     kills: 0,
     fuites: 0,
     cadenceMsg: 0,
-    cam: { x: 0, y: 0, z: 1 },
   };
 
   /* -------------------------------- canvas -------------------------------- */
@@ -523,37 +497,6 @@
   const ctx = canvas.getContext("2d");
   let L = 0, Hc = 0, echelle = 1, ox = 0, oy = 0;
   let lumiere = null;
-
-  function bornerCam() {
-    const z = etat.cam.z;
-    const vueW = L / (echelle * z), vueH = Hc / (echelle * z);
-    if (vueW >= W) etat.cam.x = (W - vueW) / 2;
-    else etat.cam.x = clamp(etat.cam.x, 0, W - vueW);
-    if (vueH >= H) etat.cam.y = (H - vueH) / 2;
-    else etat.cam.y = clamp(etat.cam.y, 0, H - vueH);
-  }
-
-  function centrerSur(p, z) {
-    etat.cam.z = z == null ? etat.cam.z : z;
-    const vueW = L / (echelle * etat.cam.z), vueH = Hc / (echelle * etat.cam.z);
-    etat.cam.x = p.x - vueW / 2;
-    etat.cam.y = p.y - vueH / 2;
-    bornerCam();
-  }
-
-  function zoomer(facteur, cx, cy) {
-    const avant = etat.cam.z;
-    etat.cam.z = clamp(etat.cam.z * facteur, 1, 4.5);
-    if (cx != null && cy != null) {
-      const r = canvas.getBoundingClientRect();
-      const sx = cx - r.left, sy = cy - r.top;
-      const wx = (sx - ox) / (echelle * avant) + etat.cam.x;
-      const wy = (sy - oy) / (echelle * avant) + etat.cam.y;
-      etat.cam.x = wx - (sx - ox) / (echelle * etat.cam.z);
-      etat.cam.y = wy - (sy - oy) / (echelle * etat.cam.z);
-    }
-    bornerCam();
-  }
 
   function redimensionner() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -569,7 +512,6 @@
     oy = (Hc - H * echelle) / 2;
 
     lumiere = null;
-    bornerCam();
   }
 
   function preparerLumiere() {
@@ -582,21 +524,16 @@
   }
 
   /* ------------------------------- placement ------------------------------- */
-  function peutPlacer(p) {
-    if (dist(p, MAIRIE) < 150) return "Trop près de la mairie";
-    if (distanceAuChemin(p) < 78) return "Trop près de la route";
-    if (p.x < 40 || p.y < 40 || p.x > W - 40 || p.y > H - 130) return "Hors de la ville";
-    if (etat.tourelles.some((t) => dist(p, t) < 76)) return "Déjà une défense ici";
-    return null;
+  function emplacementLibre(i) {
+    return !etat.tourelles.some((t) => t.slot === i);
   }
 
-  function placerTourelle(p) {
+  function placerTourelle(slot) {
     const modele = TOURELLES[etat.choix];
     if (!modele) return;
-    const refus = peutPlacer(p);
-    if (refus) {
-      bulle(refus);
-      son(180, 0.12, "square", 0.05);
+    if (!emplacementLibre(slot)) {
+      const t = etat.tourelles.find((x) => x.slot === slot);
+      ouvrirPanneau(t);
       return;
     }
     if (etat.credit < modele.cout) {
@@ -604,9 +541,10 @@
       son(180, 0.12, "square", 0.06);
       return;
     }
+    const p = EMPLACEMENTS[slot];
     etat.credit -= modele.cout;
     etat.tourelles.push({
-      x: p.x, y: p.y, cle: etat.choix, niveau: 1,
+      slot, x: p.x, y: p.y, cle: etat.choix, niveau: 1,
       angle: -Math.PI / 2, recharge: 0, total: modele.cout,
     });
     son(520, 0.1, "triangle", 0.08);
@@ -670,10 +608,9 @@
 
   function spawn(cle) {
     const m = ENNEMIS[cle];
-    const ci = etat.vague >= 2 && Math.random() < 0.45 ? 1 : 0;
-    const depart = pointSurChemin(0, ci);
+    const depart = pointSurChemin(0);
     etat.ennemis.push({
-      cle, ci, x: depart.x + rnd(-10, 10), y: depart.y + rnd(-10, 10),
+      cle, x: depart.x + rnd(-10, 10), y: depart.y + rnd(-10, 10),
       pv: m.pv * (1 + (etat.vague - 1) * 0.09),
       pvMax: m.pv * (1 + (etat.vague - 1) * 0.09),
       d: 0, air: !!m.air, angle: Math.PI, flash: 0, phase: rnd(0, 6.28),
@@ -699,9 +636,9 @@
     const m = TOURELLES[t.cle];
     t.angle = Math.atan2(cible.y - t.y, cible.x - t.x);
     etat.tirs.push({
-      x: t.x + Math.cos(t.angle) * 34,
-      y: t.y + Math.sin(t.angle) * 34,
-      cible, vitesse: t.cle === "mortier" ? 440 : 1300,
+      x: t.x + Math.cos(t.angle) * 16,
+      y: t.y + Math.sin(t.angle) * 16,
+      cible, vitesse: t.cle === "mortier" ? 210 : 620,
       degats: degatsDe(t), zone: m.zone || 0, cle: t.cle,
       type: t.cle === "mortier" ? "obus" : t.cle === "missile" ? "missile" : "balle",
       angle: t.angle,
@@ -768,15 +705,15 @@
     const cle = ordre[etat.tourelles.length % ordre.length];
     if (etat.credit < TOURELLES[cle].cout) return;
 
-    for (let essai = 0; essai < 40; essai++) {
-      const ci = Math.random() < 0.5 ? 0 : 1;
-      const d = Math.random() * SEGS[ci].total;
-      const a = pointSurChemin(d, ci);
-      const b = pointSurChemin(d + 14, ci);
-      const ang = Math.atan2(b.y - a.y, b.x - a.x) + (Math.random() < 0.5 ? 1 : -1) * Math.PI / 2;
-      const rayon = 84 + Math.random() * 46;
-      const p = { x: a.x + Math.cos(ang) * rayon, y: a.y + Math.sin(ang) * rayon };
-      if (!peutPlacer(p)) { etat.choix = cle; placerTourelle(p); return; }
+    let meilleur = -1, meilleurD = 1e9;
+    for (let i = 0; i < EMPLACEMENTS.length; i++) {
+      if (!emplacementLibre(i)) continue;
+      const d = distanceAuChemin(EMPLACEMENTS[i]) + Math.random() * 30;
+      if (d < meilleurD) { meilleurD = d; meilleur = i; }
+    }
+    if (meilleur >= 0) {
+      etat.choix = cle;
+      placerTourelle(meilleur);
     }
   }
 
@@ -785,7 +722,7 @@
 
     const pas = dt * etat.vitesse;
     etat.temps += pas;
-    etat.credit = Math.min(9999, etat.credit + 15 * pas);
+    etat.credit = Math.min(9999, etat.credit + 9 * pas);
     etat.cadenceMsg = Math.max(0, etat.cadenceMsg - pas);
     if (AUTO) piloter(pas);
 
@@ -821,15 +758,15 @@
         e.angle = a;
         e.x += Math.cos(a) * m.vit * pas;
         e.y += Math.sin(a) * m.vit * pas;
-        if (dist(e, MAIRIE) < 62) arriver(e);
+        if (dist(e, MAIRIE) < 30) arriver(e);
       } else {
         e.d += m.vit * pas;
-        const p = pointSurChemin(e.d, e.ci);
+        const p = pointSurChemin(e.d);
         e.x = p.x;
         e.y = p.y;
-        const p2 = pointSurChemin(e.d + 6, e.ci);
+        const p2 = pointSurChemin(e.d + 6);
         e.angle = Math.atan2(p2.y - p.y, p2.x - p.x);
-        if (e.d >= SEGS[e.ci].total) arriver(e);
+        if (e.d >= SEGMENTS.total) arriver(e);
       }
     }
 
@@ -894,8 +831,7 @@
     ctx.clearRect(0, 0, L, Hc);
     ctx.save();
     ctx.translate(ox, oy);
-    ctx.scale(echelle * etat.cam.z, echelle * etat.cam.z);
-    ctx.translate(-etat.cam.x, -etat.cam.y);
+    ctx.scale(echelle, echelle);
 
     if (CARTE) ctx.drawImage(CARTE, 0, 0, W, H);
     if (etat.cratere) ctx.drawImage(etat.cratere, 0, 0, W, H);
@@ -907,6 +843,24 @@
     ctx.beginPath();
     ctx.arc(MAIRIE.x, MAIRIE.y, 42, 0, 6.283);
     ctx.stroke();
+
+    // emplacements
+    for (let i = 0; i < EMPLACEMENTS.length; i++) {
+      if (!emplacementLibre(i)) continue;
+      const p = EMPLACEMENTS[i];
+      const proche = etat.selection === null;
+      ctx.strokeStyle = proche ? "rgba(245,207,27,0.45)" : "rgba(255,255,255,0.22)";
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 17, 0, 6.283);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(245,207,27,0.12)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 17, 0, 6.283);
+      ctx.fill();
+    }
 
     // tourelles
     for (const t of etat.tourelles) dessinerTourelle(t);
@@ -931,7 +885,6 @@
     const m = TOURELLES[t.cle];
     ctx.save();
     ctx.translate(t.x, t.y);
-    ctx.scale(K, K);
 
     // ombre
     ctx.fillStyle = "rgba(10,8,4,0.38)";
@@ -1185,7 +1138,7 @@
   }
 
   function demarrer() {
-    etat.credit = 430;
+    etat.credit = 220;
     etat.vague = 0;
     etat.pvVille = 20;
     etat.pvMax = 20;
@@ -1214,9 +1167,8 @@
     afficher("jeu");
     majRotation();
     redimensionner();
-    centrerSur(MAIRIE, 1.7);
     majHud();
-    bulle("Glisse pour explorer la ville, place tes défenses autour des routes");
+    bulle("Place tes défenses avant la première vague");
     if (etat.auto) autoPlacer();
   }
 
@@ -1258,18 +1210,13 @@
 
   function autoPlacer() {
     const ordre = ["mitrailleuse", "canon", "mortier", "mitrailleuse", "missile"];
-    for (const cle of ordre) {
-      const m = TOURELLES[cle];
-      if (etat.credit < m.cout) continue;
-      for (let essai = 0; essai < 40; essai++) {
-        const ci = Math.random() < 0.5 ? 0 : 1;
-        const d2 = Math.random() * SEGS[ci].total;
-        const a = pointSurChemin(d2, ci);
-        const b = pointSurChemin(d2 + 14, ci);
-        const ang = Math.atan2(b.y - a.y, b.x - a.x) + (Math.random() < 0.5 ? 1 : -1) * Math.PI / 2;
-        const rayon = 84 + Math.random() * 46;
-        const p = { x: a.x + Math.cos(ang) * rayon, y: a.y + Math.sin(ang) * rayon };
-        if (!peutPlacer(p)) { etat.choix = cle; placerTourelle(p); break; }
+    let k = 0;
+    for (let i = 0; i < EMPLACEMENTS.length && k < ordre.length; i++) {
+      etat.choix = ordre[k];
+      const m = TOURELLES[etat.choix];
+      if (etat.credit >= m.cout) {
+        placerTourelle(i);
+        k++;
       }
     }
     etat.choix = "mitrailleuse";
@@ -1282,81 +1229,32 @@
     const r = canvas.getBoundingClientRect();
     const cx = (ev.clientX != null ? ev.clientX : ev.touches[0].clientX) - r.left;
     const cy = (ev.clientY != null ? ev.clientY : ev.touches[0].clientY) - r.top;
-    return {
-      x: (cx - ox) / (echelle * etat.cam.z) + etat.cam.x,
-      y: (cy - oy) / (echelle * etat.cam.z) + etat.cam.y,
-    };
-  }
-
-  const doigts = new Map();
-  let geste = null;
-
-  function tapoter(ev) {
-    if (etat.ecran !== "jeu" || etat.enPause || etat.fini) return;
-    const p = pointEcran(ev);
-    const seuil = Math.max(46 / (echelle * etat.cam.z), 26);
-    for (const t of etat.tourelles) {
-      if (dist(p, t) < seuil) { ouvrirPanneau(t); return; }
-    }
-    if (etat.selection) { fermerPanneau(); return; }
-    placerTourelle(p);
+    return { x: (cx - ox) / echelle, y: (cy - oy) / echelle };
   }
 
   canvas.addEventListener("pointerdown", (ev) => {
-    canvas.setPointerCapture(ev.pointerId);
-    doigts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
-    if (doigts.size === 1) {
-      geste = { x: ev.clientX, y: ev.clientY, cx: etat.cam.x, cy: etat.cam.y,
-                cz: etat.cam.z, bouge: false, d0: 0 };
-    } else if (doigts.size === 2) {
-      const [a, b] = [...doigts.values()];
-      geste = { x: ev.clientX, y: ev.clientY, cx: etat.cam.x, cy: etat.cam.y,
-                cz: etat.cam.z, bouge: true, d0: Math.hypot(a.x - b.x, a.y - b.y) };
-    }
-  });
+    if (etat.ecran !== "jeu" || etat.enPause || etat.fini) return;
+    const p = pointEcran(ev);
 
-  canvas.addEventListener("pointermove", (ev) => {
-    if (!doigts.has(ev.pointerId) || !geste) return;
-    doigts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
-
-    if (doigts.size >= 2) {
-      const [a, b] = [...doigts.values()];
-      const d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (geste.d0 > 10) {
-        etat.cam.z = clamp(geste.cz * (d / geste.d0), 1, 4.5);
-        bornerCam();
+    // tourelle existante ?
+    for (const t of etat.tourelles) {
+      if (dist(p, t) * echelle < 34) {
+        ouvrirPanneau(t);
+        return;
       }
-      return;
     }
 
-    const dx = ev.clientX - geste.x, dy = ev.clientY - geste.y;
-    if (Math.abs(dx) + Math.abs(dy) > 10) geste.bouge = true;
-    if (geste.bouge) {
-      etat.cam.x = geste.cx - dx / (echelle * etat.cam.z);
-      etat.cam.y = geste.cy - dy / (echelle * etat.cam.z);
-      bornerCam();
+    // emplacement libre ?
+    for (let i = 0; i < EMPLACEMENTS.length; i++) {
+      const e = EMPLACEMENTS[i];
+      if (dist(p, e) * echelle < 44) {
+        if (emplacementLibre(i)) placerTourelle(i);
+        else ouvrirPanneau(etat.tourelles.find((t) => t.slot === i));
+        return;
+      }
     }
+    fermerPanneau();
   });
-
-  canvas.addEventListener("pointerup", (ev) => {
-    const g = geste;
-    doigts.delete(ev.pointerId);
-    if (doigts.size === 0) {
-      geste = null;
-      if (g && !g.bouge) tapoter(ev);
-    }
-  });
-
-  canvas.addEventListener("pointercancel", (ev) => {
-    doigts.delete(ev.pointerId);
-    if (doigts.size === 0) geste = null;
-  });
-
-  canvas.addEventListener("wheel", (ev) => {
-    if (etat.ecran !== "jeu") return;
-    ev.preventDefault();
-    zoomer(ev.deltaY < 0 ? 1.12 : 0.89, ev.clientX, ev.clientY);
-  }, { passive: false });
 
   $("#p-ameliorer").addEventListener("click", () => {
     const t = etat.selection;
@@ -1381,13 +1279,6 @@
   });
 
   $("#p-fermer").addEventListener("click", fermerPanneau);
-
-  $("#btn-vue").addEventListener("click", () => {
-    if (etat.cam.z > 1.25) { etat.cam.z = 1; centrerSur(MAIRIE, 1); }
-    else centrerSur(MAIRIE, 1.9);
-  });
-  $("#btn-zoom-plus").addEventListener("click", () => zoomer(1.25));
-  $("#btn-zoom-moins").addEventListener("click", () => zoomer(0.8));
 
   $("#btn-pause").addEventListener("click", () => {
     etat.enPause = !etat.enPause;

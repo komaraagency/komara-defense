@@ -1,4 +1,4 @@
-const CACHE = "komara-defense-v3";
+const CACHE = "komara-defense-v20";
 const ESSENTIELS = ["./", "index.html", "style.css", "defense.js", "manifest.json", "assets/carte-satellite.jpg"];
 
 self.addEventListener("install", (e) => {
