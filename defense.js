@@ -121,19 +121,19 @@
   /* ------------------------------ géographie ------------------------------ */
   // Axe d'invasion : la route vient de l'est et serpente jusqu'à la mairie.
   const CHEMIN = [
-    { x: 1300, y: 566 }, { x: 1052, y: 566 }, { x: 1052, y: 382 },
-    { x: 782, y: 382 }, { x: 782, y: 602 }, { x: 482, y: 602 },
-    { x: 482, y: 404 }, { x: 372, y: 404 },
+    { x: 1244, y: 476 }, { x: 1052, y: 476 }, { x: 1052, y: 292 },
+    { x: 782, y: 292 }, { x: 782, y: 512 }, { x: 482, y: 512 },
+    { x: 482, y: 314 }, { x: 372, y: 314 },
   ];
 
-  const MAIRIE = { x: 328, y: 404 };
+  const MAIRIE = { x: 328, y: 314 };
 
   const EMPLACEMENTS = [
-    { x: 1160, y: 640 }, { x: 1150, y: 492 }, { x: 1150, y: 288 },
-    { x: 952, y: 300 }, { x: 902, y: 452 }, { x: 700, y: 468 },
-    { x: 690, y: 300 }, { x: 620, y: 668 }, { x: 884, y: 690 },
-    { x: 552, y: 528 }, { x: 390, y: 668 }, { x: 366, y: 318 },
-    { x: 392, y: 522 }, { x: 604, y: 318 },
+    { x: 1160, y: 550 }, { x: 1150, y: 402 }, { x: 1150, y: 198 },
+    { x: 952, y: 210 }, { x: 902, y: 362 }, { x: 700, y: 378 },
+    { x: 690, y: 210 }, { x: 620, y: 578 }, { x: 884, y: 600 },
+    { x: 552, y: 438 }, { x: 390, y: 578 }, { x: 366, y: 228 },
+    { x: 392, y: 432 }, { x: 604, y: 228 },
   ];
 
   // segments du chemin, pour mesurer la progression
@@ -385,6 +385,36 @@
     g.stroke();
     g.setLineDash([]);
 
+    // point de depart des ennemis : bien visible et clignotant
+    {
+      const dep = CHEMIN[0];
+      const sui = CHEMIN[1];
+      const puls2 = 0.5 + Math.sin(etat.temps * 3.4) * 0.5;
+      g.fillStyle = "rgba(200,16,46," + (0.10 + puls2 * 0.16).toFixed(2) + ")";
+      g.beginPath();
+      g.arc(dep.x, dep.y, 62 + puls2 * 12, 0, 6.283);
+      g.fill();
+      g.strokeStyle = "rgba(255,70,95," + (0.55 + puls2 * 0.4).toFixed(2) + ")";
+      g.lineWidth = 3;
+      g.beginPath();
+      g.arc(dep.x, dep.y, 40, 0, 6.283);
+      g.stroke();
+      // fleche vers la ville
+      const ang = Math.atan2(sui.y - dep.y, sui.x - dep.x);
+      g.save();
+      g.translate(dep.x, dep.y);
+      g.rotate(ang);
+      g.fillStyle = "rgba(255,80,100," + (0.65 + puls2 * 0.35).toFixed(2) + ")";
+      g.beginPath();
+      g.moveTo(-6, -17); g.lineTo(26, 0); g.lineTo(-6, 17); g.closePath();
+      g.fill();
+      g.restore();
+      g.fillStyle = "rgba(255,235,235,0.92)";
+      g.font = "bold 15px system-ui, sans-serif";
+      g.textAlign = "center";
+      g.fillText("ENTREE", dep.x, dep.y - 52);
+    }
+
     // poussière et traces sur la route
     for (let i = 0; i < 220; i++) {
       const d = r() * SEGMENTS.total;
@@ -507,7 +537,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const portraitForce = forcerPortrait && Hc > L;
-    echelle = portraitForce ? Math.min(L / W, Hc / H) : Math.max(L / W, Hc / H);
+    echelle = Math.min(L / W, Hc / H);
     ox = (L - W * echelle) / 2;
     oy = (Hc - H * echelle) / 2;
 
@@ -829,6 +859,26 @@
   /* --------------------------------- rendu --------------------------------- */
   function dessiner(dt) {
     ctx.clearRect(0, 0, L, Hc);
+
+    // fond hors cadre : la carte floutee et assombrie, pour ne jamais voir de vide
+    ctx.fillStyle = "#0a0d0b";
+    ctx.fillRect(0, 0, L, Hc);
+    if (IMG && IMG.complete && IMG.naturalWidth > 0) {
+      const sc = Math.max(L / W, Hc / H) * 1.06;
+      const bw = W * sc, bh = H * sc;
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      ctx.drawImage(IMG, (L - bw) / 2, (Hc - bh) / 2, bw, bh);
+      ctx.restore();
+      ctx.fillStyle = "rgba(8,11,9,0.38)";
+      ctx.fillRect(0, 0, L, Hc);
+    }
+
+    // liseres sur les bords de la carte
+    ctx.strokeStyle = "rgba(245,207,27,0.20)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(ox, oy, W * echelle, H * echelle);
+
     ctx.save();
     ctx.translate(ox, oy);
     ctx.scale(echelle, echelle);
