@@ -1,7 +1,7 @@
 {
   "name": "Komara Défense — Sauve la ville",
   "short_name": "Komara Défense",
-  "description": "Défends la ville contre les vagues d'invasion. Vue satellite, tourelles et stratégie.",
+  "description": "Défends la ville contre les vagues d'invasion. Cinq routes d'invasion, des tourelles et une ville à sauver.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",

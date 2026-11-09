@@ -6,35 +6,39 @@
   "use strict";
 
   /* ------------------------------- constantes ------------------------------ */
-  const W = 1280;
-  const H = 720;
+  const W = 1600;
+  const H = 900;
   const CLE = "komara-defense-v1";
 
   const TOURELLES = {
     mitrailleuse: {
-      nom: "Mitrailleuse", ico: "🔫", cout: 60,
+      nom: "Mitrailleuse", ico: "🔫", cout: 60, pv: 150,
       degats: 5, cadence: 0.12, portee: 132, sol: true, air: true, couleur: "#c9d3c4",
     },
     canon: {
-      nom: "Canon", ico: "💥", cout: 120,
+      nom: "Canon", ico: "💥", cout: 120, pv: 190,
       degats: 42, cadence: 1.45, portee: 168, sol: true, air: false, couleur: "#b9a06a",
     },
     missile: {
-      nom: "Missile", ico: "🚀", cout: 150,
+      nom: "Missile", ico: "🚀", cout: 150, pv: 170,
       degats: 58, cadence: 1.9, portee: 215, sol: false, air: true, couleur: "#9fb8c9",
     },
     mortier: {
-      nom: "Mortier", ico: "💣", cout: 140,
+      nom: "Mortier", ico: "💣", cout: 140, pv: 140,
       degats: 38, cadence: 2.2, portee: 235, sol: true, air: false, zone: 62, couleur: "#a8a08e",
     },
   };
 
   const ENNEMIS = {
     eclaireur: { nom: "Éclaireur", pv: 42, vit: 76, recompense: 8, taille: 9, degatsVille: 1, air: false, couleur: "#8a6b3f" },
-    soldat: { nom: "Soldat", pv: 76, vit: 50, recompense: 10, taille: 10, degatsVille: 2, air: false, couleur: "#6d5b45" },
-    blinde: { nom: "Blindé", pv: 240, vit: 34, recompense: 28, taille: 15, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55 },
-    helico: { nom: "Hélico", pv: 96, vit: 64, recompense: 24, taille: 12, degatsVille: 3, air: true, couleur: "#3e4a3a" },
-    boss: { nom: "Convoi lourd", pv: 1200, vit: 22, recompense: 220, taille: 22, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4 },
+    soldat: { nom: "Soldat", pv: 76, vit: 50, recompense: 10, taille: 10, degatsVille: 2, air: false, couleur: "#6d5b45",
+      tir: { portee: 118, degats: 9, cadence: 1.25 } },
+    blinde: { nom: "Blindé", pv: 240, vit: 34, recompense: 28, taille: 15, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55,
+      tir: { portee: 142, degats: 21, cadence: 2.1 } },
+    helico: { nom: "Hélico", pv: 96, vit: 64, recompense: 24, taille: 12, degatsVille: 3, air: true, couleur: "#3e4a3a",
+      tir: { portee: 112, degats: 11, cadence: 1.5 } },
+    boss: { nom: "Convoi lourd", pv: 1200, vit: 22, recompense: 220, taille: 22, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4,
+      tir: { portee: 182, degats: 36, cadence: 1.9 } },
   };
 
   const VAGUES = [
@@ -119,55 +123,61 @@
   }
 
   /* ------------------------------ géographie ------------------------------ */
-  // Axe d'invasion : la route vient de l'est et serpente jusqu'à la mairie.
-  const CHEMIN = [
-    { x: 1244, y: 476 }, { x: 1052, y: 476 }, { x: 1052, y: 292 },
-    { x: 782, y: 292 }, { x: 782, y: 512 }, { x: 482, y: 512 },
-    { x: 482, y: 314 }, { x: 372, y: 314 },
-  ];
+  // Cinq routes d'invasion convergent vers la mairie.
+  const MAIRIE = { x: 800, y: 470 };
 
-  const MAIRIE = { x: 328, y: 314 };
+  const CHEMINS = [
+    [{ x: 800, y: -60 }, { x: 800, y: 180 }, { x: 960, y: 180 }, { x: 960, y: 470 }, { x: 800, y: 470 }],
+    [{ x: -60, y: 470 }, { x: 300, y: 470 }, { x: 300, y: 330 }, { x: 620, y: 330 }, { x: 620, y: 470 }, { x: 800, y: 470 }],
+    [{ x: 1660, y: 300 }, { x: 1240, y: 300 }, { x: 1240, y: 600 }, { x: 1000, y: 600 }, { x: 1000, y: 470 }, { x: 800, y: 470 }],
+    [{ x: 1500, y: -60 }, { x: 1500, y: 150 }, { x: 1150, y: 150 }, { x: 1150, y: 380 }, { x: 900, y: 380 }, { x: 800, y: 470 }],
+    [{ x: 500, y: 960 }, { x: 500, y: 720 }, { x: 700, y: 720 }, { x: 700, y: 470 }, { x: 800, y: 470 }],
+  ];
 
   const EMPLACEMENTS = [
-    { x: 1160, y: 550 }, { x: 1150, y: 402 }, { x: 1150, y: 198 },
-    { x: 952, y: 210 }, { x: 902, y: 362 }, { x: 700, y: 378 },
-    { x: 690, y: 210 }, { x: 620, y: 578 }, { x: 884, y: 600 },
-    { x: 552, y: 438 }, { x: 390, y: 578 }, { x: 366, y: 228 },
-    { x: 392, y: 432 }, { x: 604, y: 228 },
+    { x: 862, y: 262 }, { x: 736, y: 330 }, { x: 1030, y: 250 }, { x: 1030, y: 400 },
+    { x: 380, y: 262 }, { x: 516, y: 258 }, { x: 380, y: 400 }, { x: 540, y: 560 },
+    { x: 1350, y: 224 }, { x: 1520, y: 224 }, { x: 1320, y: 452 }, { x: 1090, y: 676 },
+    { x: 1216, y: 676 }, { x: 1252, y: 82 }, { x: 1404, y: 84 }, { x: 1064, y: 226 },
+    { x: 424, y: 822 }, { x: 610, y: 828 }, { x: 622, y: 604 }, { x: 782, y: 596 },
   ];
 
-  // segments du chemin, pour mesurer la progression
-  const SEGMENTS = [];
-  (function () {
+  // segments de chaque chemin, pour mesurer la progression
+  const SEGS = CHEMINS.map(function (pts) {
+    const segs = [];
     let total = 0;
-    for (let i = 0; i < CHEMIN.length - 1; i++) {
-      const a = CHEMIN[i], b = CHEMIN[i + 1];
-      const l = dist(a, b);
-      SEGMENTS.push({ a, b, l, debut: total });
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1];
+      const l = Math.hypot(b.x - a.x, b.y - a.y);
+      segs.push({ a, b, l, debut: total });
       total += l;
     }
-    SEGMENTS.total = total;
-  })();
+    segs.total = total;
+    return segs;
+  });
 
-  function pointSurChemin(d) {
-    d = clamp(d, 0, SEGMENTS.total);
-    for (const s of SEGMENTS) {
+  function pointSurChemin(ci, d) {
+    const segs = SEGS[ci];
+    d = clamp(d, 0, segs.total);
+    for (const s of segs) {
       if (d <= s.debut + s.l) {
         const t = (d - s.debut) / s.l;
         return { x: s.a.x + (s.b.x - s.a.x) * t, y: s.a.y + (s.b.y - s.a.y) * t };
       }
     }
-    const fin = CHEMIN[CHEMIN.length - 1];
+    const fin = CHEMINS[ci][CHEMINS[ci].length - 1];
     return { x: fin.x, y: fin.y };
   }
 
   function distanceAuChemin(p) {
     let mini = 1e9;
-    for (const s of SEGMENTS) {
-      const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y;
-      const t = clamp(((p.x - s.a.x) * dx + (p.y - s.a.y) * dy) / (s.l * s.l), 0, 1);
-      const px = s.a.x + dx * t, py = s.a.y + dy * t;
-      mini = Math.min(mini, Math.hypot(p.x - px, p.y - py));
+    for (const segs of SEGS) {
+      for (const s of segs) {
+        const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y;
+        const t = clamp(((p.x - s.a.x) * dx + (p.y - s.a.y) * dy) / (s.l * s.l), 0, 1);
+        const px = s.a.x + dx * t, py = s.a.y + dy * t;
+        mini = Math.min(mini, Math.hypot(p.x - px, p.y - py));
+      }
     }
     return mini;
   }
@@ -177,11 +187,7 @@
   let CARTE_ECHELLE = 2;
   let forcerPortrait = false;
 
-  // fond satellite photographique (repli : carte dessinee)
-  const IMG = new Image();
-  IMG.decoding = "async";
-  IMG.onload = function () { CARTE = genererCarte(); };
-  IMG.src = "assets/carte-satellite.jpg";
+  // la ville est entierement dessinee par le moteur
 
   function genererCarte() {
     const c = document.createElement("canvas");
@@ -191,301 +197,180 @@
     g.scale(CARTE_ECHELLE, CARTE_ECHELLE);
     const r = prng(20261109);
 
-    /* --- terre --- */
+    /* --- sol --- */
     const sol = g.createLinearGradient(0, 0, W, H);
-    sol.addColorStop(0, "#8f7d55");
-    sol.addColorStop(0.45, "#9c8a60");
-    sol.addColorStop(1, "#8a7952");
+    sol.addColorStop(0, "#39402f");
+    sol.addColorStop(0.5, "#414736");
+    sol.addColorStop(1, "#333a2b");
     g.fillStyle = sol;
     g.fillRect(0, 0, W, H);
 
-    // taches de terre, zones sèches et humides
-    for (let i = 0; i < 420; i++) {
+    for (let i = 0; i < 300; i++) {
+      const x = r() * W, y = r() * H, rad = 18 + r() * 95;
+      g.fillStyle = "rgba(" + ((52 + r() * 26) | 0) + "," + ((62 + r() * 26) | 0) + "," + ((44 + r() * 18) | 0) + ",0.13)";
+      g.beginPath();
+      g.arc(x, y, rad, 0, 6.283);
+      g.fill();
+    }
+
+    /* --- rues secondaires : la trame de la ville --- */
+    g.strokeStyle = "#5c5c52";
+    g.lineWidth = 13;
+    g.lineCap = "butt";
+    for (let y = 90; y < H; y += 90) {
+      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+    }
+    for (let x = 100; x < W; x += 100) {
+      g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke();
+    }
+    g.strokeStyle = "rgba(190,186,160,0.16)";
+    g.lineWidth = 1.4;
+    g.setLineDash([9, 14]);
+    for (let y = 90; y < H; y += 90) {
+      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+    }
+    g.setLineDash([]);
+
+    /* --- parcs et places --- */
+    const parc = (x, y, w, h) => {
+      g.fillStyle = "#2f4a2c";
+      g.fillRect(x, y, w, h);
+      g.fillStyle = "rgba(140,190,110,0.10)";
+      g.fillRect(x + 3, y + 3, w - 6, h - 6);
+      for (let i = 0; i < 16; i++) {
+        const ax = x + 6 + r() * (w - 12), ay = y + 6 + r() * (h - 12);
+        g.fillStyle = "rgba(18,26,16,0.55)";
+        g.beginPath(); g.arc(ax + 3, ay + 3, 6 + r() * 5, 0, 6.283); g.fill();
+        g.fillStyle = "#3f6b34";
+        g.beginPath(); g.arc(ax, ay, 5 + r() * 5, 0, 6.283); g.fill();
+      }
+    };
+    parc(106, 558, 184, 78);
+    parc(706, 96, 190, 72);
+    parc(1306, 646, 190, 168);
+    parc(206, 102, 84, 72);
+
+    /* --- batiments --- */
+    const TEINTES = ["#6d6a5e", "#7a7263", "#5f6156", "#847a68", "#69665c", "#727c78"];
+    const TOITS = ["#8b8172", "#7d7466", "#948b7a", "#6f6a60", "#82796a"];
+
+    const batiment = (x, y, w, h, teinte, toit) => {
+      g.fillStyle = "rgba(0,0,0,0.32)";
+      g.fillRect(x + 4, y + 5, w, h);
+      g.fillStyle = teinte;
+      g.fillRect(x, y, w, h);
+      g.fillStyle = toit;
+      g.fillRect(x, y, w, Math.max(4, h * 0.34));
+      g.strokeStyle = "rgba(0,0,0,0.30)";
+      g.lineWidth = 1;
+      g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+      if (w > 20 && h > 20) {
+        g.fillStyle = "rgba(255,236,180,0.20)";
+        const cols = Math.max(2, Math.floor(w / 12)), rows = Math.max(2, Math.floor(h / 12));
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < rows; j++) {
+            if (r() < 0.55) continue;
+            g.fillRect(x + 4 + i * ((w - 8) / cols), y + h * 0.44 + j * ((h * 0.5) / rows), 3, 2.4);
+          }
+        }
+      }
+    };
+
+    const pasX = 100, pasY = 90, marge = 15;
+    for (let gx = 0; gx < W; gx += pasX) {
+      for (let gy = 0; gy < H; gy += pasY) {
+        const x0 = gx + marge, y0 = gy + marge, x1 = gx + pasX - marge, y1 = gy + pasY - marge;
+        const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+        if (Math.hypot(cx - MAIRIE.x, cy - MAIRIE.y) < 96) continue;
+        if (distanceAuChemin({ x: cx, y: cy }) < 34) continue;
+
+        const colonnes = 1 + ((r() < 0.45) ? 1 : 0);
+        const rangees = 1 + ((r() < 0.5) ? 1 : 0);
+        const bw = (x1 - x0 - (colonnes - 1) * 7) / colonnes;
+        const bh = (y1 - y0 - (rangees - 1) * 7) / rangees;
+
+        for (let i = 0; i < colonnes; i++) {
+          for (let j = 0; j < rangees; j++) {
+            const bx = x0 + i * (bw + 7), by = y0 + j * (bh + 7);
+            if (r() < 0.12) continue;
+            batiment(bx, by, bw, bh,
+              TEINTES[(r() * TEINTES.length) | 0],
+              TOITS[(r() * TOITS.length) | 0]);
+          }
+        }
+      }
+    }
+
+    /* --- batiments signature aux couleurs Komara --- */
+    const signature = (x, y, w, h, teinte, toit) => {
+      g.fillStyle = "rgba(0,0,0,0.34)";
+      g.fillRect(x + 4, y + 5, w, h);
+      g.fillStyle = teinte;
+      g.fillRect(x, y, w, h);
+      g.fillStyle = toit;
+      g.fillRect(x, y, w, Math.max(5, h * 0.30));
+    };
+    signature(352, 186, 76, 54, "#5a5548", "#c8302f");
+    signature(1218, 366, 74, 56, "#5a5548", "#e8c327");
+    signature(1040, 728, 78, 54, "#5a5548", "#1f9c55");
+    signature(228, 742, 72, 56, "#5a5548", "#c8302f");
+
+    /* --- place de la mairie --- */
+    g.fillStyle = "#5a564a";
+    g.beginPath();
+    g.arc(MAIRIE.x, MAIRIE.y, 92, 0, 6.283);
+    g.fill();
+    g.fillStyle = "rgba(210,200,170,0.13)";
+    g.beginPath();
+    g.arc(MAIRIE.x, MAIRIE.y, 84, 0, 6.283);
+    g.fill();
+    g.strokeStyle = "rgba(245,207,27,0.22)";
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(MAIRIE.x, MAIRIE.y, 92, 0, 6.283);
+    g.stroke();
+
+    /* --- arbres epars --- */
+    for (let i = 0; i < 150; i++) {
       const x = r() * W, y = r() * H;
-      const rx = 20 + r() * 110, ry = 14 + r() * 80;
-      g.fillStyle = r() > 0.5
-        ? "rgba(160,140,95," + (0.05 + r() * 0.09).toFixed(3) + ")"
-        : "rgba(110,95,62," + (0.05 + r() * 0.09).toFixed(3) + ")";
-      g.beginPath();
-      g.ellipse(x, y, rx, ry, r() * 3.14, 0, 6.283);
-      g.fill();
+      if (distanceAuChemin({ x, y }) < 40) continue;
+      if (Math.hypot(x - MAIRIE.x, y - MAIRIE.y) < 100) continue;
+      g.fillStyle = "rgba(0,0,0,0.28)";
+      g.beginPath(); g.arc(x + 3, y + 3, 7 + r() * 4, 0, 6.283); g.fill();
+      g.fillStyle = "#3a6330";
+      g.beginPath(); g.arc(x, y, 6 + r() * 4, 0, 6.283); g.fill();
     }
 
-    /* --- mer à l'ouest + plage --- */
-    const mer = g.createLinearGradient(0, 0, 210, 0);
-    mer.addColorStop(0, "#12505e");
-    mer.addColorStop(0.55, "#1b6b74");
-    mer.addColorStop(1, "#2a8b8a");
-    g.fillStyle = mer;
-    g.beginPath();
-    g.moveTo(0, 0);
-    g.lineTo(150, 0);
-    for (let y = 0; y <= H; y += 30) {
-      g.lineTo(150 + Math.sin(y * 0.02) * 14 + r() * 10, y);
-    }
-    g.lineTo(0, H);
-    g.closePath();
-    g.fill();
-
-    // écume et vagues
-    g.strokeStyle = "rgba(255,255,255,0.28)";
-    for (let i = 0; i < 90; i++) {
-      const x = r() * 150, y = r() * H;
-      g.lineWidth = 0.8 + r() * 1.4;
-      g.beginPath();
-      g.moveTo(x, y);
-      g.quadraticCurveTo(x + 12, y - 4, x + 26, y);
-      g.stroke();
-    }
-    // plage
-    g.fillStyle = "#cbb98d";
-    g.beginPath();
-    g.moveTo(150, 0);
-    for (let y = 0; y <= H; y += 30) g.lineTo(150 + Math.sin(y * 0.02) * 14, y);
-    g.lineTo(196, H);
-    g.lineTo(196, 0);
-    g.closePath();
-    g.fill();
-
-    /* --- quartiers de bâtiments --- */
-    const quartiers = [
-      { x: 250, y: 60, w: 330, h: 210, dens: 26 },
-      { x: 600, y: 470, w: 250, h: 220, dens: 22 },
-      { x: 880, y: 60, w: 320, h: 210, dens: 24 },
-      { x: 250, y: 470, w: 190, h: 200, dens: 16 },
-      { x: 600, y: 60, w: 220, h: 200, dens: 18 },
-      { x: 900, y: 470, w: 300, h: 210, dens: 20 },
-      { x: 1080, y: 250, w: 150, h: 110, dens: 10 },
-    ];
-
-    const ombreBati = (x, y, w, h, rayon) => {
-      g.fillStyle = "rgba(24,18,10,0.32)";
-      g.beginPath();
-      if (g.roundRect) g.roundRect(x + 9, y + 11, w, h, rayon);
-      else g.rect(x + 9, y + 11, w, h);
-      g.fill();
-    };
-
-    const toits = ["#7d5b40", "#8a6a4a", "#6f6050", "#946d47", "#7a6a5a", "#5f6b5c", "#8b7a63"];
-
-    for (const q of quartiers) {
-      for (let i = 0; i < q.dens; i++) {
-        const bw = 22 + r() * 30;
-        const bh = 22 + r() * 30;
-        const x = q.x + r() * (q.w - bw);
-        const y = q.y + r() * (q.h - bh);
-        const p = { x: x + bw / 2, y: y + bh / 2 };
-        if (distanceAuChemin(p) < 52) continue;
-
-        ombreBati(x, y, bw, bh, 2.5);
-
-        // toit
-        const teinte = toits[Math.floor(r() * toits.length)];
-        g.fillStyle = teinte;
-        g.beginPath();
-        if (g.roundRect) g.roundRect(x, y, bw, bh, 2.5);
-        else g.rect(x, y, bw, bh);
-        g.fill();
-
-        // texture du toit : tôle, tuiles
-        g.strokeStyle = "rgba(0,0,0,0.16)";
-        g.lineWidth = 0.7;
-        const lignes = Math.max(2, Math.round(bh / 7));
-        for (let k = 1; k < lignes; k++) {
-          g.beginPath();
-          g.moveTo(x + 1, y + (bh / lignes) * k);
-          g.lineTo(x + bw - 1, y + (bh / lignes) * k);
-          g.stroke();
-        }
-        // reflet de toit
-        g.fillStyle = "rgba(255,255,255,0.07)";
-        g.fillRect(x + 1.5, y + 1.5, bw - 3, Math.max(2, bh * 0.3));
-
-        // cour / détail
-        if (r() < 0.3) {
-          g.fillStyle = "rgba(70,60,42,0.35)";
-          g.fillRect(x + 2, y + bh + 3, bw * 0.5, 4);
-        }
-      }
-    }
-
-    /* --- végétation --- */
-    const arbre = (x, y, taille) => {
-      g.fillStyle = "rgba(20,28,14,0.35)";
-      g.beginPath();
-      g.ellipse(x + taille * 0.35, y + taille * 0.4, taille, taille * 0.85, 0, 0, 6.283);
-      g.fill();
-      g.fillStyle = "#3f5c2f";
-      g.beginPath();
-      g.arc(x, y, taille, 0, 6.283);
-      g.fill();
-      g.fillStyle = "#4f7139";
-      g.beginPath();
-      g.arc(x - taille * 0.22, y - taille * 0.22, taille * 0.62, 0, 6.283);
-      g.fill();
-    };
-
-    for (let i = 0; i < 240; i++) {
-      const x = 205 + r() * (W - 215), y = 20 + r() * (H - 40);
-      if (distanceAuChemin({ x, y }) < 44) continue;
-      const t = 5 + r() * 8;
-      arbre(x, y, t);
-    }
-
-    // bosquets denses
-    for (const bosquet of [{ x: 60, y: 120 }, { x: 1230, y: 640 }, { x: 520, y: 250 }]) {
-      for (let i = 0; i < 26; i++) {
-        const x = bosquet.x + (r() - 0.5) * 130;
-        const y = bosquet.y + (r() - 0.5) * 130;
-        if (x < 205 || x > W - 10) continue;
-        if (distanceAuChemin({ x, y }) < 46) continue;
-        arbre(x, y, 6 + r() * 9);
-      }
-    }
-
-    /* --- fond satellite : il remplace tout le decor dessine --- */
-    if (IMG && IMG.complete && IMG.naturalWidth > 0) {
-      g.drawImage(IMG, 0, 0, W, H);
-    }
-
-    /* --- routes --- */
-    const traceRoute = (pts, largeur, couleur) => {
+    /* --- asphalte des cinq routes d'invasion --- */
+    const trace = (pts, largeur, couleur) => {
       g.lineCap = "round";
       g.lineJoin = "round";
-      g.strokeStyle = "rgba(30,26,18,0.35)";
-      g.lineWidth = largeur + 6;
+      g.strokeStyle = "rgba(22,20,16,0.40)";
+      g.lineWidth = largeur + 8;
       g.beginPath();
       g.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
       g.stroke();
-
       g.strokeStyle = couleur;
       g.lineWidth = largeur;
       g.beginPath();
       g.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
       g.stroke();
-    };
-
-    // routes secondaires
-    traceRoute([{ x: 340, y: 0 }, { x: 340, y: 560 }, { x: 900, y: 560 }], 16, "#4a463c");
-    traceRoute([{ x: 560, y: 720 }, { x: 560, y: 250 }, { x: 1180, y: 250 }], 15, "#4a463c");
-    traceRoute([{ x: 1000, y: 720 }, { x: 1000, y: 120 }], 14, "#4a463c");
-
-    // route principale d'invasion
-    traceRoute(CHEMIN, 30, "rgba(52,48,41,0.9)");
-
-    // marquage central
-    g.setLineDash([10, 22]);
-    g.strokeStyle = "rgba(226,214,170,0.22)";
-    g.lineWidth = 2;
-    g.beginPath();
-    g.moveTo(CHEMIN[0].x, CHEMIN[0].y);
-    for (let i = 1; i < CHEMIN.length; i++) g.lineTo(CHEMIN[i].x, CHEMIN[i].y);
-    g.stroke();
-    g.setLineDash([]);
-
-    // point de depart des ennemis : bien visible et clignotant
-    {
-      const dep = CHEMIN[0];
-      const sui = CHEMIN[1];
-      const puls2 = 0.5 + Math.sin(etat.temps * 3.4) * 0.5;
-      g.fillStyle = "rgba(200,16,46," + (0.10 + puls2 * 0.16).toFixed(2) + ")";
+      g.strokeStyle = "rgba(210,200,175,0.10)";
+      g.lineWidth = 2;
       g.beginPath();
-      g.arc(dep.x, dep.y, 62 + puls2 * 12, 0, 6.283);
-      g.fill();
-      g.strokeStyle = "rgba(255,70,95," + (0.55 + puls2 * 0.4).toFixed(2) + ")";
-      g.lineWidth = 3;
-      g.beginPath();
-      g.arc(dep.x, dep.y, 40, 0, 6.283);
+      g.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
       g.stroke();
-      // fleche vers la ville
-      const ang = Math.atan2(sui.y - dep.y, sui.x - dep.x);
-      g.save();
-      g.translate(dep.x, dep.y);
-      g.rotate(ang);
-      g.fillStyle = "rgba(255,80,100," + (0.65 + puls2 * 0.35).toFixed(2) + ")";
-      g.beginPath();
-      g.moveTo(-6, -17); g.lineTo(26, 0); g.lineTo(-6, 17); g.closePath();
-      g.fill();
-      g.restore();
-      g.fillStyle = "rgba(255,235,235,0.92)";
-      g.font = "bold 15px system-ui, sans-serif";
-      g.textAlign = "center";
-      g.fillText("ENTREE", dep.x, dep.y - 52);
-    }
+    };
+    for (const pts of CHEMINS) trace(pts, 30, "#57544b");
 
-    // poussière et traces sur la route
-    for (let i = 0; i < 220; i++) {
-      const d = r() * SEGMENTS.total;
-      const p = pointSurChemin(d);
-      g.fillStyle = "rgba(180,165,130," + (0.03 + r() * 0.07).toFixed(3) + ")";
-      g.beginPath();
-      g.arc(p.x + (r() - 0.5) * 30, p.y + (r() - 0.5) * 30, 2 + r() * 7, 0, 6.283);
-      g.fill();
-    }
-
-    /* --- mairie (objectif) --- */
-    g.fillStyle = "rgba(20,14,8,0.4)";
-    g.beginPath();
-    g.ellipse(MAIRIE.x + 12, MAIRIE.y + 14, 34, 28, 0, 0, 6.283);
-    g.fill();
-    g.fillStyle = "#b8a888";
-    g.beginPath();
-    g.arc(MAIRIE.x, MAIRIE.y, 26, 0, 6.283);
-    g.fill();
-    g.fillStyle = "#8d7f63";
-    g.beginPath();
-    g.arc(MAIRIE.x, MAIRIE.y, 18, 0, 6.283);
-    g.fill();
-    g.fillStyle = "#c9b98f";
-    g.beginPath();
-    g.arc(MAIRIE.x, MAIRIE.y, 9, 0, 6.283);
-    g.fill();
-
-    /* --- véhicules garés (uniquement en carte dessinee) --- */
-    if (!(IMG && IMG.complete && IMG.naturalWidth > 0))
-    for (let i = 0; i < 40; i++) {
-      const x = 220 + r() * (W - 240), y = 30 + r() * (H - 60);
-      if (distanceAuChemin({ x, y }) < 40) continue;
-      const horiz = r() > 0.5;
-      const l = 9 + r() * 5;
-      g.fillStyle = "rgba(20,18,12,0.3)";
-      g.fillRect(x + 2, y + 2, horiz ? l : 5, horiz ? 5 : l);
-      g.fillStyle = ["#8a8f96", "#6f7780", "#9d8a6a", "#7a6a55"][Math.floor(r() * 4)];
-      g.fillRect(x, y, horiz ? l : 5, horiz ? 5 : l);
-    }
-
-    /* --- cimetière de containers / dépôt --- */
-    if (!(IMG && IMG.complete && IMG.naturalWidth > 0))
-    for (let i = 0; i < 14; i++) {
-      const x = 1100 + r() * 140, y = 500 + r() * 180;
-      if (distanceAuChemin({ x, y }) < 42) continue;
-      g.fillStyle = "rgba(15,14,10,0.3)";
-      g.fillRect(x + 3, y + 4, 30, 14);
-      g.fillStyle = ["#8f5b3e", "#4e6a72", "#7d7a4a", "#6a4f4a"][Math.floor(r() * 4)];
-      g.fillRect(x, y, 30, 14);
-      g.strokeStyle = "rgba(0,0,0,0.25)";
-      g.lineWidth = 1;
-      g.strokeRect(x + 0.5, y + 0.5, 29, 13);
-    }
-
-    /* --- grain photographique + ombre générale --- */
-    const grain = document.createElement("canvas");
-    grain.width = 160;
-    grain.height = 160;
-    const gg = grain.getContext("2d");
-    const img = gg.createImageData(160, 160);
-    for (let i = 0; i < img.data.length; i += 4) {
-      const v = 120 + Math.random() * 40;
-      img.data[i] = v;
-      img.data[i + 1] = v;
-      img.data[i + 2] = v;
-      img.data[i + 3] = 16;
-    }
-    gg.putImageData(img, 0, 0);
-    const motif = g.createPattern(grain, "repeat");
-    g.fillStyle = motif;
+    /* --- vignette --- */
+    const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
+    vg.addColorStop(0, "rgba(0,0,0,0)");
+    vg.addColorStop(1, "rgba(0,0,0,0.38)");
+    g.fillStyle = vg;
     g.fillRect(0, 0, W, H);
 
     return c;
@@ -504,6 +389,8 @@
     pvVille: 20,
     pvMax: 20,
     ennemis: [],
+    prochaineRoute: 0,
+    tirsEnnemis: [],
     tourelles: [],
     tirs: [],
     effets: [],
@@ -525,7 +412,30 @@
   /* -------------------------------- canvas -------------------------------- */
   const canvas = $("#scene");
   const ctx = canvas.getContext("2d");
-  let L = 0, Hc = 0, echelle = 1, ox = 0, oy = 0;
+  let L = 0, Hc = 0, echelle = 1, echelleBase = 1, ox = 0, oy = 0;
+  const camC = { x: W / 2, y: H / 2, z: 1 };
+  const camV = { x: W / 2, y: H / 2, z: 1 };
+
+  function bornerCam() {
+    const e = echelleBase * camC.z;
+    const demiL = (L / 2) / e;
+    const demiH = (Hc / 2) / e;
+    if (demiL * 2 >= W - 1) camC.x = W / 2; else camC.x = clamp(camC.x, demiL, W - demiL);
+    if (demiH * 2 >= H - 1) camC.y = H / 2; else camC.y = clamp(camC.y, demiH, H - demiH);
+  }
+
+  function appliquerCamera() {
+    echelle = echelleBase * camV.z;
+    ox = L / 2 - camV.x * echelle;
+    oy = Hc / 2 - camV.y * echelle;
+  }
+
+  function centrerSur(p, z) {
+    camC.x = p.x;
+    camC.y = p.y;
+    if (z) camC.z = z;
+    bornerCam();
+  }
   let lumiere = null;
 
   function redimensionner() {
@@ -536,10 +446,10 @@
     canvas.height = Math.round(Hc * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const portraitForce = forcerPortrait && Hc > L;
-    echelle = Math.min(L / W, Hc / H);
-    ox = (L - W * echelle) / 2;
-    oy = (Hc - H * echelle) / 2;
+    echelleBase = Math.min(L / W, Hc / H);
+    bornerCam();
+    camV.x = camC.x; camV.y = camC.y; camV.z = camC.z;
+    appliquerCamera();
 
     lumiere = null;
   }
@@ -576,6 +486,7 @@
     etat.tourelles.push({
       slot, x: p.x, y: p.y, cle: etat.choix, niveau: 1,
       angle: -Math.PI / 2, recharge: 0, total: modele.cout,
+      pv: modele.pv, pvMax: modele.pv,
     });
     son(520, 0.1, "triangle", 0.08);
     majHud();
@@ -591,6 +502,8 @@
         ? "Niveau maximum. Dégâts " + Math.round(degatsDe(t)) + ", portée " + Math.round(porteeDe(t)) + " m."
         : "Dégâts " + Math.round(degatsDe(t)) + " · portée " + Math.round(porteeDe(t)) + " m. L'amélioration augmente les deux.";
     $("#p-cout").textContent = t.niveau >= 3 ? "" : cout + " ⚡";
+    $("#p-desc").textContent += " État " + Math.max(0, Math.round(t.pv)) + "/" + Math.round(t.pvMax) + " PV."
+      + (t.niveau < 3 ? " L'amélioration répare et renforce." : "");
     $("#p-ameliorer").disabled = t.niveau >= 3 || etat.credit < cout;
     $("#p-ameliorer").style.display = t.niveau >= 3 ? "none" : "block";
     $("#p-rendu").textContent = Math.round(t.total * 0.6) + " ⚡";
@@ -638,12 +551,17 @@
 
   function spawn(cle) {
     const m = ENNEMIS[cle];
-    const depart = pointSurChemin(0);
+    const ci = etat.prochaineRoute % CHEMINS.length;
+    etat.prochaineRoute += 1;
+    const depart = pointSurChemin(ci, 0);
+    const suiv = pointSurChemin(ci, 8);
     etat.ennemis.push({
-      cle, x: depart.x + rnd(-10, 10), y: depart.y + rnd(-10, 10),
+      cle, ci, x: depart.x + rnd(-6, 6), y: depart.y + rnd(-6, 6),
       pv: m.pv * (1 + (etat.vague - 1) * 0.09),
       pvMax: m.pv * (1 + (etat.vague - 1) * 0.09),
-      d: 0, air: !!m.air, angle: Math.PI, flash: 0, phase: rnd(0, 6.28),
+      d: 0, air: !!m.air, angle: Math.atan2(suiv.y - depart.y, suiv.x - depart.x),
+      flash: 0, phase: rnd(0, 6.28),
+      rechargeTir: rnd(0.4, 1.5), engagement: false,
     });
   }
 
@@ -692,6 +610,14 @@
       }
     }
     if (cible.pv <= 0) tuer(cible);
+  }
+
+  function detruireTourelle(t) {
+    etat.tourelles = etat.tourelles.filter((x) => x !== t);
+    etat.effets.push({ type: "explosion", x: t.x, y: t.y, t: 0, taille: 1.3 });
+    if (etat.selection === t) fermerPanneau();
+    bulle("Tourelle détruite !");
+    son(90, 0.3, "sawtooth", 0.07);
   }
 
   function tuer(e) {
@@ -782,6 +708,32 @@
       e.flash = Math.max(0, e.flash - pas);
       e.phase += pas * 3;
 
+      // riposte : l'ennemi vise les tourelles qui le prennent pour cible
+      if (m.tir) {
+        let cibleT = null, meilleur = m.tir.portee;
+        for (const t of etat.tourelles) {
+          const dt2 = Math.hypot(t.x - e.x, t.y - e.y);
+          if (dt2 < meilleur) { meilleur = dt2; cibleT = t; }
+        }
+        if (cibleT) {
+          e.engagement = true;
+          e.rechargeTir -= pas;
+          const at = Math.atan2(cibleT.y - e.y, cibleT.x - e.x);
+          if (!e.air) e.angle = at;
+          if (e.rechargeTir <= 0) {
+            e.rechargeTir = m.tir.cadence;
+            etat.tirsEnnemis.push({
+              x: e.x + Math.cos(at) * 10, y: e.y + Math.sin(at) * 10,
+              cible: cibleT, angle: at, vitesse: 300, degats: m.tir.degats, mort: false,
+            });
+            son(210, 0.05, "square", 0.022);
+          }
+          if (!e.air) continue;
+        } else {
+          e.engagement = false;
+        }
+      }
+
       if (e.air) {
         // les hélicos coupent droit vers la mairie
         const a = Math.atan2(MAIRIE.y - e.y, MAIRIE.x - e.x);
@@ -791,12 +743,12 @@
         if (dist(e, MAIRIE) < 30) arriver(e);
       } else {
         e.d += m.vit * pas;
-        const p = pointSurChemin(e.d);
+        const p = pointSurChemin(e.ci, e.d);
         e.x = p.x;
         e.y = p.y;
-        const p2 = pointSurChemin(e.d + 6);
+        const p2 = pointSurChemin(e.ci, e.d + 6);
         e.angle = Math.atan2(p2.y - p.y, p2.x - p.x);
-        if (e.d >= SEGMENTS.total) arriver(e);
+        if (e.d >= SEGS[e.ci].total) arriver(e);
       }
     }
 
@@ -834,12 +786,33 @@
       }
     }
 
+    // projectiles ennemis : ils visent les tourelles
+    for (const tir of etat.tirsEnnemis) {
+      const c = tir.cible;
+      if (!c || c.pv <= 0 || etat.tourelles.indexOf(c) < 0) { tir.mort = true; continue; }
+      const a = Math.atan2(c.y - tir.y, c.x - tir.x);
+      const d = Math.hypot(c.x - tir.x, c.y - tir.y);
+      const pasTir = tir.vitesse * pas;
+      if (d <= pasTir) {
+        c.pv -= tir.degats;
+        c.flash = 0.16;
+        etat.effets.push({ type: "impact", x: c.x, y: c.y, t: 0, taille: 0.7 });
+        if (c.pv <= 0) detruireTourelle(c);
+        tir.mort = true;
+      } else {
+        tir.x += Math.cos(a) * pasTir;
+        tir.y += Math.sin(a) * pasTir;
+        tir.angle = a;
+      }
+    }
+
     // effets
     for (const ef of etat.effets) ef.t += pas;
 
     // nettoyage
     etat.ennemis = etat.ennemis.filter((e) => e.pv > 0);
     etat.tirs = etat.tirs.filter((t) => !t.mort);
+    etat.tirsEnnemis = etat.tirsEnnemis.filter((t) => !t.mort);
     etat.effets = etat.effets.filter((e) => e.t < (e.type === "explosion" ? 0.9 : 0.45));
 
     if (etat.pvVille <= 0 && !etat.fini) defaite();
@@ -860,19 +833,12 @@
   function dessiner(dt) {
     ctx.clearRect(0, 0, L, Hc);
 
-    // fond hors cadre : la carte floutee et assombrie, pour ne jamais voir de vide
-    ctx.fillStyle = "#0a0d0b";
+    // fond hors cadre : degrade sobre aux couleurs de la ville
+    const fond = ctx.createLinearGradient(0, 0, 0, Hc);
+    fond.addColorStop(0, "#111a13");
+    fond.addColorStop(1, "#0a0f0b");
+    ctx.fillStyle = fond;
     ctx.fillRect(0, 0, L, Hc);
-    if (IMG && IMG.complete && IMG.naturalWidth > 0) {
-      const sc = Math.max(L / W, Hc / H) * 1.06;
-      const bw = W * sc, bh = H * sc;
-      ctx.save();
-      ctx.globalAlpha = 0.55;
-      ctx.drawImage(IMG, (L - bw) / 2, (Hc - bh) / 2, bw, bh);
-      ctx.restore();
-      ctx.fillStyle = "rgba(8,11,9,0.38)";
-      ctx.fillRect(0, 0, L, Hc);
-    }
 
     // liseres sur les bords de la carte
     ctx.strokeStyle = "rgba(245,207,27,0.20)";
@@ -884,6 +850,46 @@
     ctx.scale(echelle, echelle);
 
     if (CARTE) ctx.drawImage(CARTE, 0, 0, W, H);
+
+    // pointilles animes sur les cinq axes
+    ctx.setLineDash([10, 22]);
+    ctx.lineDashOffset = -etat.temps * 26;
+    ctx.strokeStyle = "rgba(240,220,150,0.30)";
+    ctx.lineWidth = 2.4;
+    for (const pts of CHEMINS) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
+
+    // entrees : une par route
+    for (let ci = 0; ci < CHEMINS.length; ci++) {
+      const dep = CHEMINS[ci][0];
+      const sui = CHEMINS[ci][1];
+      if (dep.x < -10 || dep.y < -10 || dep.x > W + 10 || dep.y > H + 10) continue;
+      const puls2 = 0.5 + Math.sin(etat.temps * 3.2 + ci * 1.2) * 0.5;
+      ctx.fillStyle = "rgba(200,16,46," + (0.10 + puls2 * 0.15).toFixed(2) + ")";
+      ctx.beginPath();
+      ctx.arc(dep.x, dep.y, 46 + puls2 * 9, 0, 6.283);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,72,96," + (0.5 + puls2 * 0.4).toFixed(2) + ")";
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      ctx.arc(dep.x, dep.y, 30, 0, 6.283);
+      ctx.stroke();
+      const ang = Math.atan2(sui.y - dep.y, sui.x - dep.x);
+      ctx.save();
+      ctx.translate(dep.x, dep.y);
+      ctx.rotate(ang);
+      ctx.fillStyle = "rgba(255,86,106," + (0.65 + puls2 * 0.35).toFixed(2) + ")";
+      ctx.beginPath();
+      ctx.moveTo(-4, -11); ctx.lineTo(18, 0); ctx.lineTo(-4, 11); ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
     if (etat.cratere) ctx.drawImage(etat.cratere, 0, 0, W, H);
 
     // mairie : halo de protection
@@ -920,6 +926,7 @@
 
     // projectiles
     for (const tir of etat.tirs) dessinerTir(tir);
+    for (const tir of etat.tirsEnnemis) dessinerTirEnnemi(tir);
 
     // effets
     for (const ef of etat.effets) dessinerEffet(ef);
@@ -971,6 +978,16 @@
 
     ctx.restore();
 
+    // etat de la tourelle
+    if (t.pv < t.pvMax) {
+      const larg = 26, haut = 3.6;
+      const ratio = Math.max(0, t.pv / t.pvMax);
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillRect(t.x - larg / 2, t.y - 26, larg, haut);
+      ctx.fillStyle = ratio > 0.5 ? "#4ade80" : ratio > 0.25 ? "#f5cf1b" : "#e5484d";
+      ctx.fillRect(t.x - larg / 2, t.y - 26, larg * ratio, haut);
+    }
+
     // niveau
     if (t.niveau > 1) {
       ctx.fillStyle = "#f5cf1b";
@@ -978,6 +995,21 @@
       ctx.textAlign = "center";
       ctx.fillText("★".repeat(t.niveau - 1), t.x, t.y - 18);
     }
+  }
+
+  function dessinerTirEnnemi(tir) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,120,70,0.95)";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(tir.x, tir.y);
+    ctx.lineTo(tir.x - Math.cos(tir.angle) * 12, tir.y - Math.sin(tir.angle) * 12);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,90,40,0.9)";
+    ctx.beginPath();
+    ctx.arc(tir.x, tir.y, 2.2, 0, 6.283);
+    ctx.fill();
+    ctx.restore();
   }
 
   function dessinerEnnemi(e) {
@@ -1195,6 +1227,7 @@
     etat.ennemis = [];
     etat.tourelles = [];
     etat.tirs = [];
+    etat.tirsEnnemis = [];
     etat.effets = [];
     etat.fileVague = [];
     etat.entreVagues = 4;
@@ -1282,8 +1315,60 @@
     return { x: (cx - ox) / echelle, y: (cy - oy) / echelle };
   }
 
+  let geste = null;
+
   canvas.addEventListener("pointerdown", (ev) => {
-    if (etat.ecran !== "jeu" || etat.enPause || etat.fini) return;
+    if (etat.ecran !== "jeu") return;
+    geste = { x: ev.clientX, y: ev.clientY, camX: camC.x, camY: camC.y, bouge: false, id: ev.pointerId, t: performance.now() };
+    try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
+  });
+
+  canvas.addEventListener("pointermove", (ev) => {
+    if (!geste || geste.id !== ev.pointerId) return;
+    const dx = ev.clientX - geste.x, dy = ev.clientY - geste.y;
+    if (!geste.bouge && Math.hypot(dx, dy) > 10) geste.bouge = true;
+    if (!geste.bouge) return;
+    const e = echelleBase * camV.z;
+    camC.x = geste.camX - dx / e;
+    camC.y = geste.camY - dy / e;
+    bornerCam();
+    camV.x = camC.x;
+    camV.y = camC.y;
+    appliquerCamera();
+  });
+
+  canvas.addEventListener("pointerup", (ev) => {
+    if (!geste || geste.id !== ev.pointerId) return;
+    const g = geste;
+    geste = null;
+    if (g.bouge) return;
+    if (etat.enPause || etat.fini) return;
+    poserAuDoigt({ clientX: ev.clientX, clientY: ev.clientY });
+  });
+
+  canvas.addEventListener("pointercancel", () => { geste = null; });
+
+  // pincement a deux doigts
+  let pince = null;
+  canvas.addEventListener("touchstart", (ev) => {
+    if (ev.touches.length === 2) {
+      const [a, b] = ev.touches;
+      pince = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: camC.z };
+      geste = null;
+    }
+  }, { passive: true });
+  canvas.addEventListener("touchmove", (ev) => {
+    if (!pince || ev.touches.length !== 2) return;
+    const [a, b] = ev.touches;
+    const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    camC.z = clamp(pince.z * (d / pince.d), 1, 3.2);
+    bornerCam();
+    appliquerCamera();
+    ev.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener("touchend", () => { pince = null; }, { passive: true });
+
+  function poserAuDoigt(ev) {
     const p = pointEcran(ev);
 
     // tourelle existante ?
@@ -1304,7 +1389,7 @@
       }
     }
     fermerPanneau();
-  });
+  }
 
   $("#p-ameliorer").addEventListener("click", () => {
     const t = etat.selection;
@@ -1314,6 +1399,8 @@
     etat.credit -= cout;
     t.niveau += 1;
     t.total += cout;
+    t.pvMax = Math.round(t.pvMax * 1.35);
+    t.pv = t.pvMax;
     son(700, 0.12, "triangle", 0.08);
     ouvrirPanneau(t);
     majHud();
@@ -1329,6 +1416,20 @@
   });
 
   $("#p-fermer").addEventListener("click", fermerPanneau);
+
+  $("#btn-zoom-plus").addEventListener("click", () => {
+    camC.z = clamp(camC.z * 1.35, 1, 3.2);
+    bornerCam();
+  });
+  $("#btn-zoom-moins").addEventListener("click", () => {
+    camC.z = clamp(camC.z / 1.35, 1, 3.2);
+    bornerCam();
+  });
+  $("#btn-vue").addEventListener("click", () => {
+    if (camC.z > 1.1) { camC.z = 1; camC.x = W / 2; camC.y = H / 2; }
+    else { camC.z = 1.9; }
+    bornerCam();
+  });
 
   $("#btn-pause").addEventListener("click", () => {
     etat.enPause = !etat.enPause;
@@ -1390,6 +1491,12 @@
   function boucle(t) {
     const dt = Math.min(0.05, (t - dernier) / 1000 || 0.016);
     dernier = t;
+    const liss = Math.min(1, dt * 11);
+    camV.x += (camC.x - camV.x) * liss;
+    camV.y += (camC.y - camV.y) * liss;
+    camV.z += (camC.z - camV.z) * liss;
+    appliquerCamera();
+
     if (etat.ecran === "jeu") {
       mettreAJour(dt);
       dessiner(dt);
@@ -1399,6 +1506,7 @@
 
   /* ---------------------------------- départ -------------------------------- */
   function init() {
+    window.__komara = etat;
     CARTE = genererCarte();
     redimensionner();
     dessinerAccueil();

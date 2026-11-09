@@ -475,3 +475,18 @@ h1 {
   #panneau { bottom: 4.6rem; }
   .carte { flex-basis: 6.4rem; }
 }
+
+.bouton-secondaire {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(245,207,27,0.45);
+  background: rgba(245,207,27,0.10);
+  color: #f5cf1b;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bouton-secondaire:active { transform: scale(0.98); }

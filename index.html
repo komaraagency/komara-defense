@@ -54,6 +54,9 @@
     <div class="hud-bloc droite">
       <div class="credits"><span class="eclair">⚡</span><b id="hud-credit">220</b></div>
       <div class="boutons-haut">
+        <button id="btn-vue" class="rond" aria-label="Vue d'ensemble">⤢</button>
+        <button id="btn-zoom-moins" class="rond" aria-label="Zoom arrière">−</button>
+        <button id="btn-zoom-plus" class="rond" aria-label="Zoom avant">+</button>
         <button id="btn-son" class="rond" aria-label="Son">🔊</button>
         <button id="btn-vitesse" class="rond" aria-label="Vitesse">››</button>
         <button id="btn-pause" class="rond" aria-label="Pause">⏸</button>
@@ -109,5 +112,41 @@ window.addEventListener("error", function (e) {
 }, true);
 </script>
 <script src="defense.js?v=3"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+
+  (function () {
+    var invite = null;
+    var bouton = document.getElementById("btn-installer");
+    if (!bouton) return;
+    var dejaInstalle = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+    if (dejaInstalle) return;
+
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    window.addEventListener("beforeinstallprompt", function (e) {
+      e.preventDefault();
+      invite = e;
+      bouton.classList.remove("cache");
+    });
+
+    if (ios) bouton.classList.remove("cache");
+
+    bouton.addEventListener("click", function () {
+      if (invite) {
+        invite.prompt();
+        invite.userChoice.then(function () { invite = null; bouton.classList.add("cache"); });
+      } else {
+        alert("Sur iPhone : touche le bouton Partager en bas de Safari, puis « Sur l'écran d'accueil ». Sur Android : menu ⋮ puis « Installer l'application ».");
+      }
+    });
+
+    window.addEventListener("appinstalled", function () { bouton.classList.add("cache"); });
+  })();
+</script>
 </body>
 </html>
