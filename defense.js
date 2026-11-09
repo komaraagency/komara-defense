@@ -32,9 +32,9 @@
   const ENNEMIS = {
     eclaireur: { nom: "Éclaireur", pv: 42, vit: 76, recompense: 8, taille: 9, degatsVille: 1, air: false, couleur: "#8a6b3f" },
     soldat: { nom: "Soldat", pv: 76, vit: 50, recompense: 10, taille: 10, degatsVille: 2, air: false, couleur: "#6d5b45" },
-    blinde: { nom: "Blindé", pv: 270, vit: 33, recompense: 28, taille: 15, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55 },
+    blinde: { nom: "Blindé", pv: 240, vit: 34, recompense: 28, taille: 15, degatsVille: 2, air: false, couleur: "#4a5240", blindage: 0.55 },
     helico: { nom: "Hélico", pv: 96, vit: 64, recompense: 24, taille: 12, degatsVille: 3, air: true, couleur: "#3e4a3a" },
-    boss: { nom: "Convoi lourd", pv: 1500, vit: 21, recompense: 220, taille: 22, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4 },
+    boss: { nom: "Convoi lourd", pv: 1200, vit: 22, recompense: 220, taille: 22, degatsVille: 10, air: false, couleur: "#3c332a", blindage: 0.4 },
   };
 
   const VAGUES = [
@@ -480,7 +480,7 @@
     choix: "mitrailleuse",
     selection: null,
     temps: 0,
-    entreVagues: 3,
+    entreVagues: 2,
     fileVague: [],
     prochainSpawn: 0,
     enPause: false,
@@ -720,7 +720,7 @@
 
     const pas = dt * etat.vitesse;
     etat.temps += pas;
-    etat.credit = Math.min(9999, etat.credit + 6 * pas);
+    etat.credit = Math.min(9999, etat.credit + 9 * pas);
     etat.cadenceMsg = Math.max(0, etat.cadenceMsg - pas);
     if (AUTO) piloter(pas);
 
@@ -732,14 +732,14 @@
       }
       etat.entreVagues -= pas;
       if (etat.entreVagues <= 0) {
-        etat.entreVagues = 3;
+        etat.entreVagues = 2;
         demarrerVague();
       }
     } else if (etat.fileVague.length > 0) {
       etat.prochainSpawn -= pas;
       if (etat.prochainSpawn <= 0) {
         spawn(etat.fileVague.shift());
-        etat.prochainSpawn = 0.75;
+        etat.prochainSpawn = 0.6;
       }
     }
 
