@@ -121,21 +121,37 @@
 
   /* ------------------------------ géographie ------------------------------ */
   // Deux axes d'invasion convergents vers la mairie.
+  // Rues reelles de Kaloum (Conakry), issues d'OpenStreetMap.
   const CHEMINS = [
     [
-      { x: 2550, y: 900 }, { x: 2150, y: 900 }, { x: 2150, y: 560 },
-      { x: 1750, y: 560 }, { x: 1750, y: 860 }, { x: 1180, y: 860 },
-      { x: 1180, y: 640 }, { x: 900, y: 640 }, { x: 900, y: 760 },
-      { x: 760, y: 700 },
+      { x: 2064.7, y: -50.0 },
+      { x: 1935.2, y: 100.7 },
+      { x: 1929.7, y: 107.1 },
+      { x: 1883.5, y: 25.0 },
+      { x: 1568.7, y: 219.5 },
+      { x: 1483.5, y: 267.5 },
+      { x: 1426.3, y: 548.7 },
+      { x: 1353.5, y: 597.0 },
+      { x: 1349.2, y: 605.7 },
+      { x: 1343.1, y: 640.1 },
+      { x: 1262.8, y: 624.4 },
+      { x: 1267.7, y: 632.8 },
+      { x: 1250.3, y: 705.2 },
     ],
     [
-      { x: 2380, y: 70 }, { x: 2000, y: 70 }, { x: 2000, y: 340 },
-      { x: 1420, y: 340 }, { x: 1420, y: 470 }, { x: 1010, y: 470 },
-      { x: 1010, y: 780 }, { x: 760, y: 700 },
+      { x: 186.7, y: -50.0 },
+      { x: 655.6, y: 44.9 },
+      { x: 807.3, y: 75.6 },
+      { x: 785.9, y: 193.2 },
+      { x: 1186.0, y: 273.3 },
+      { x: 1145.7, y: 478.4 },
+      { x: 1165.1, y: 466.6 },
+      { x: 1267.7, y: 632.8 },
+      { x: 1250.3, y: 705.2 },
     ],
   ];
 
-  const MAIRIE = { x: 700, y: 700 };
+  const MAIRIE = { x: 1250, y: 705 };
 
   // segments par chemin, pour mesurer la progression
   const SEGS = CHEMINS.map((pts) => {
@@ -350,9 +366,7 @@
 
     /* --- fond satellite : il remplace tout le decor dessine --- */
     if (IMG && IMG.complete && IMG.naturalWidth > 0) {
-      const sc = Math.max(W / IMG.naturalWidth, H / IMG.naturalHeight);
-      const iw = IMG.naturalWidth * sc, ih = IMG.naturalHeight * sc;
-      g.drawImage(IMG, (W - iw) / 2, H - ih, iw, ih);
+      g.drawImage(IMG, 0, 0, W, H);
     }
 
     /* --- routes --- */
@@ -374,12 +388,20 @@
       g.stroke();
     };
 
-    // les deux axes d'invasion
+    // axes d'invasion : simple reperage au sol, les ennemis suivent les vraies rues
     for (const pts of CHEMINS) {
-      traceRoute(pts, 46, "rgba(58,52,42,0.92)");
-      g.setLineDash([16, 30]);
-      g.strokeStyle = "rgba(232,220,180,0.20)";
-      g.lineWidth = 3;
+      g.lineCap = "round";
+      g.lineJoin = "round";
+      g.strokeStyle = "rgba(18,16,12,0.20)";
+      g.lineWidth = 13;
+      g.beginPath();
+      g.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
+      g.stroke();
+
+      g.setLineDash([7, 30]);
+      g.strokeStyle = "rgba(245,207,27,0.50)";
+      g.lineWidth = 3.5;
       g.beginPath();
       g.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
@@ -521,7 +543,7 @@
 
   function zoomer(facteur, cx, cy) {
     const avant = etat.cam.z;
-    etat.cam.z = clamp(etat.cam.z * facteur, 1, 3.4);
+    etat.cam.z = clamp(etat.cam.z * facteur, 1, 4.5);
     if (cx != null && cy != null) {
       const r = canvas.getBoundingClientRect();
       const sx = cx - r.left, sy = cy - r.top;
@@ -563,7 +585,7 @@
   function peutPlacer(p) {
     if (dist(p, MAIRIE) < 150) return "Trop près de la mairie";
     if (distanceAuChemin(p) < 78) return "Trop près de la route";
-    if (p.x < 40 || p.y < 40 || p.x > W - 40 || p.y > H - 190) return "Hors de la ville";
+    if (p.x < 40 || p.y < 40 || p.x > W - 40 || p.y > H - 130) return "Hors de la ville";
     if (etat.tourelles.some((t) => dist(p, t) < 76)) return "Déjà une défense ici";
     return null;
   }
@@ -1192,8 +1214,7 @@
     afficher("jeu");
     majRotation();
     redimensionner();
-    etat.cam.z = 1;
-    centrerSur(MAIRIE, 1);
+    centrerSur(MAIRIE, 1.7);
     majHud();
     bulle("Glisse pour explorer la ville, place tes défenses autour des routes");
     if (etat.auto) autoPlacer();
@@ -1302,7 +1323,7 @@
       const [a, b] = [...doigts.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
       if (geste.d0 > 10) {
-        etat.cam.z = clamp(geste.cz * (d / geste.d0), 1, 3.4);
+        etat.cam.z = clamp(geste.cz * (d / geste.d0), 1, 4.5);
         bornerCam();
       }
       return;
@@ -1361,6 +1382,10 @@
 
   $("#p-fermer").addEventListener("click", fermerPanneau);
 
+  $("#btn-vue").addEventListener("click", () => {
+    if (etat.cam.z > 1.25) { etat.cam.z = 1; centrerSur(MAIRIE, 1); }
+    else centrerSur(MAIRIE, 1.9);
+  });
   $("#btn-zoom-plus").addEventListener("click", () => zoomer(1.25));
   $("#btn-zoom-moins").addEventListener("click", () => zoomer(0.8));
 
